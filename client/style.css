@@ -1,4 +1,11 @@
+#load {
+    margin-bottom: 1em;
+}
+
 #films {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1em;
     list-style: none;
     padding: 0;
     margin: 0;
@@ -8,11 +15,33 @@
     margin-bottom: 1em;
 }
 
+.film-content {
+    display: flex;
+    gap: 1em;
+    align-items: flex-start;
+}
+
+.film-poster {
+    width: 200px;
+    height: auto;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.film-details {
+    min-width: 0;
+    flex: 1;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+}
+
 .film-title {
-    text-align: center;
+    text-align: left;
     font-size: 1.3em;
     font-weight: bold;
     font-style: italic;
+    margin-top: 0;
     margin-bottom: 0.2em;
 }
 

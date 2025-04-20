@@ -29,17 +29,23 @@ document.getElementById('load').addEventListener('click', async () => {
         const d = node.getElementsByTagName('director')[0].textContent;
         const desc = node.getElementsByTagName('description')[0].textContent;
         const actors = Array.from(node.getElementsByTagName('actor')).map(el => el.textContent);
+        const imageName = node.getElementsByTagName('imageName')[0].textContent;
         const li = document.createElement('li');
         li.classList.add('film-item');
         
         li.innerHTML =
-            `<h2 class="film-title">${t}</h2>
-            <p><strong>Director:</strong> ${d}</p>
-            <p><strong>Actors:</strong></p>
-            <ul>
-                ${actors.map(a => `<li>${a}</li>`).join('')}
-            </ul>
-            <p><strong>Description:</strong> ${desc}</p>`;
+            `<div class="film-content">
+                <img class="film-poster" src="http://localhost:9999/cinema/images/${imageName}" alt="${t}">
+                <div class="film-details">
+                    <h2 class="film-title">${t}</h2>
+                    <p><strong>Director:</strong> ${d}</p>
+                    <p><strong>Actors:</strong></p>
+                    <ul>
+                        ${actors.map(a => `<li>${a}</li>`).join('')}
+                    </ul>
+                    <p><strong>Description:</strong> ${desc}</p>
+                </div>
+            </div>`;
         ul.append(li);
     });    
 });
