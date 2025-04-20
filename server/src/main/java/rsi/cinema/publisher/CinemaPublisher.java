@@ -1,4 +1,6 @@
-package rsi.cinema.server;
+package rsi.cinema.publisher;
+
+import rsi.cinema.service.CinemaServiceImpl;
 
 import com.sun.net.httpserver.Filter;
 import com.sun.net.httpserver.HttpContext;
@@ -11,15 +13,15 @@ import java.net.InetSocketAddress;
 
 public class CinemaPublisher {
     public static void main(String[] args) throws Exception {
-        HttpServer server = HttpServer.create(new InetSocketAddress(9999), 0);
-        HttpContext ctx = server.createContext("/cinema/hello");
+        HttpServer http = HttpServer.create(new InetSocketAddress(9999), 0);
+        HttpContext ctx = http.createContext("/cinema");
         ctx.getFilters().add(new Filter() {
-
-            @Override public String description() {
+            @Override
+            public String description() {
                 return "CORS";
             }
-
-            @Override public void doFilter(HttpExchange ex, Chain chain) throws IOException {
+            @Override
+            public void doFilter(HttpExchange ex, Chain chain) throws IOException {
                 ex.getResponseHeaders().add("Access-Control-Allow-Origin",  "*");
                 ex.getResponseHeaders().add("Access-Control-Allow-Methods", "POST,OPTIONS");
                 ex.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type,SOAPAction");
@@ -29,10 +31,11 @@ public class CinemaPublisher {
                 }
                 chain.doFilter(ex);
             }
-
         });
-        Endpoint.create(new CinemaServiceImpl()).publish(ctx);
-        server.start();
+
+        Endpoint ep = Endpoint.create(new CinemaServiceImpl());
+        ep.publish(ctx);
+        http.start();
         System.out.println("Service published");
     }
 }

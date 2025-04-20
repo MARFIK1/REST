@@ -1,0 +1,16 @@
+[
+  {
+    "title": "Minecraft: Film",
+    "director": "Jared Hess",
+    "actors": ["Jason Momoa", "Jack Black", "Sebastian Hansen", "Emma Myers", "Danielle Brooks", "Jennifer Coolidge"],
+    "description": "Grupka ludzi trafia do gry komputerowej \"Minecraft\". Próbują oni wydostać się z tej kwadratowej krainy, a pomaga im kultowa postać - Steve.",
+    "imageName": "minecraft_film.jpg"
+  },
+  {
+    "title": "Grzesznicy",
+    "director": "Ryan Coogler",
+    "actors": ["Michael B. Jordan", "Hailee Steinfeld", "Jack O'Connell", "Wunmi Mosaku", "Jayme Lawson", "Omar Benson Miller"],
+    "description": "Chcąc zostawić za sobą burzliwą przeszłość, bracia bliźniacy wracają do rodzinnego miasta, żeby zacząć życie od nowa. Na miejscu przekonują się, że czeka na nich jeszcze gorsze zło.",
+    "imageName": "grzesznicy.jpg"
+  }
+]
