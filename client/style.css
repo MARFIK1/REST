@@ -49,3 +49,39 @@
     list-style: disc;
     margin: 0 0 0 1.5em;
 }
+
+.seat-table {
+    border-collapse: collapse;
+    margin: 20px auto;
+}
+
+.seat-table td {
+    padding: 5px;
+    text-align: center;
+}
+
+.seat {
+    padding: 10px 15px;
+    background-color: lightgray;
+    border: 1px solid black;
+    cursor: pointer;
+}
+
+.seat.selected {
+    background-color: green;
+    color: white;
+}
+
+.reserve-button {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    background-color: blue;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.reserve-button:hover {
+    background-color: darkblue;
+}

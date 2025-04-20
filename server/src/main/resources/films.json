@@ -4,13 +4,17 @@
     "director": "Jared Hess",
     "actors": ["Jason Momoa", "Jack Black", "Sebastian Hansen", "Emma Myers", "Danielle Brooks", "Jennifer Coolidge"],
     "description": "Grupka ludzi trafia do gry komputerowej \"Minecraft\". Próbują oni wydostać się z tej kwadratowej krainy, a pomaga im kultowa postać - Steve.",
-    "imageName": "minecraft_film.jpg"
+    "imageName": "minecraft_film.jpg",
+    "availableSeats": ["A1", "A2", "A3", "A4", "A5", "B1", "B2", "B3", "B4", "B5", "C1", "C2", "C3", "C4", "C5", "D1", "D2", "D3", "D4", "D5", "E1", "E2", "E3", "E4", "E5"],
+    "reservedSeats": []
   },
   {
     "title": "Grzesznicy",
     "director": "Ryan Coogler",
     "actors": ["Michael B. Jordan", "Hailee Steinfeld", "Jack O'Connell", "Wunmi Mosaku", "Jayme Lawson", "Omar Benson Miller"],
     "description": "Chcąc zostawić za sobą burzliwą przeszłość, bracia bliźniacy wracają do rodzinnego miasta, żeby zacząć życie od nowa. Na miejscu przekonują się, że czeka na nich jeszcze gorsze zło.",
-    "imageName": "grzesznicy.jpg"
+    "imageName": "grzesznicy.jpg",
+    "availableSeats": ["A1", "A2", "A3", "A4", "A5", "B1", "B2", "B3", "B4", "B5", "C1", "C2", "C3", "C4", "C5", "D1", "D2", "D3", "D4", "D5", "E1", "E2", "E3", "E4", "E5"],
+    "reservedSeats": []
   }
 ]
