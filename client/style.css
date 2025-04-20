@@ -85,3 +85,17 @@
 .reserve-button:hover {
     background-color: darkblue;
 }
+
+.cancel-button {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    background-color: red;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.cancel-button:hover {
+    background-color: darkred;
+}

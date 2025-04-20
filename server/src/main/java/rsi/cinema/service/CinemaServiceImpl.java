@@ -35,19 +35,21 @@ public class CinemaServiceImpl implements CinemaService {
     }
 
     @Override
-    public String makeReservation(int filmIndex, List<String> seats) {
+    public String makeReservation(int filmIndex, String showtime, List<String> seats) {
         if (filmIndex < 0 || filmIndex >= films.size()) {
             return "Invalid film index.";
         }
 
         FilmInfo film = films.get(filmIndex);
 
-        if (film.getAvailableSeats() == null) {
-            return "No seat information available for the selected film.";
+        if (!film.getShowtimes().contains(showtime)) {
+            return "Invalid showtime.";
         }
 
-        List<String> availableSeats = film.getAvailableSeats();
-        List<String> reservedSeats = film.getReservedSeats();
+        List<String> availableSeats = film.getSeatsByShowtime().get(showtime);
+        if (availableSeats == null) {
+            return "No seat information available for the selected showtime.";
+        }
 
         for (String seat : seats) {
             if (!availableSeats.contains(seat)) {
@@ -57,9 +59,41 @@ public class CinemaServiceImpl implements CinemaService {
 
         for (String seat : seats) {
             availableSeats.remove(seat);
-            reservedSeats.add(seat);
         }
 
-        return "Reservation successful for film: " + film.getTitle() + " for seats: " + String.join(", ", seats);
+        return "Reservation successful for film: " + film.getTitle() + " at " + showtime + " for seats: " + String.join(", ", seats);
+    }
+
+    @Override
+    public String cancelReservation(int filmIndex, String showtime, List<String> seats) {
+        if (filmIndex < 0 || filmIndex >= films.size()) {
+            return "Invalid film index.";
+        }
+    
+        FilmInfo film = films.get(filmIndex);
+
+        System.out.println("Showtime from client: " + showtime);
+System.out.println("Available showtimes: " + film.getShowtimes());
+    
+        if (!film.getShowtimes().contains(showtime)) {
+            return "Invalid showtime.";
+        }
+    
+        List<String> availableSeats = film.getSeatsByShowtime().get(showtime);
+        if (availableSeats == null) {
+            return "No seat information available for the selected showtime.";
+        }
+    
+        for (String seat : seats) {
+            if (availableSeats.contains(seat)) {
+                return "Seat " + seat + " is not reserved.";
+            }
+        }
+    
+        for (String seat : seats) {
+            availableSeats.add(seat);
+        }
+    
+        return "Reservation cancelled for film: " + film.getTitle() + " at " + showtime + " for seats: " + String.join(", ", seats);
     }
 }

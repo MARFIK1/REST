@@ -17,7 +17,10 @@ public interface CinemaService {
 
     @WebMethod
     DataHandler downloadImage(@WebParam(name="imageName") String imageName);
-    
+
     @WebMethod
-    String makeReservation(@WebParam(name = "filmIndex") int filmIndex, @WebParam(name = "seats") List<String> seats);
+    String makeReservation(@WebParam(name = "filmIndex") int filmIndex, @WebParam(name = "showtime") String showtime, @WebParam(name = "seats") List<String> seats);
+
+    @WebMethod
+    String cancelReservation(@WebParam(name = "filmIndex") int filmIndex, @WebParam(name = "showtime") String showtime, @WebParam(name = "seats") List<String> seats);
 }

@@ -24,14 +24,16 @@ document.getElementById('load').addEventListener('click', async () => {
   const ul = document.getElementById('films');
   ul.innerHTML = '';
   
-  items.forEach(node => {
+  items.forEach((node, index) => {
       const t = node.getElementsByTagName('title')[0].textContent;
       const d = node.getElementsByTagName('director')[0].textContent;
       const desc = node.getElementsByTagName('description')[0].textContent;
       const actors = Array.from(node.getElementsByTagName('actor')).map(el => el.textContent);
       const imageName = node.getElementsByTagName('imageName')[0].textContent;
+      const showtimes = Array.from(node.getElementsByTagName('showtime')).map(el => el.textContent);
       const li = document.createElement('li');
       li.classList.add('film-item');
+      li.dataset.index = index;
       
       li.innerHTML =
           `<div class="film-content">
@@ -44,6 +46,10 @@ document.getElementById('load').addEventListener('click', async () => {
                       ${actors.map(a => `<li>${a}</li>`).join('')}
                   </ul>
                   <p><strong>Description:</strong> ${desc}</p>
+                  <label for="showtime-${index}"><strong>Showtime:</strong></label>
+                  <select id="showtime-${index}" class="showtime-select">
+                      ${showtimes.map(time => `<option value="${time}">${time}</option>`).join('')}
+                  </select>
                   <button class="select-film">Rezerwacja</button>
               </div>
           </div>`;
@@ -52,13 +58,15 @@ document.getElementById('load').addEventListener('click', async () => {
 
   document.querySelectorAll('.select-film').forEach(button => {
       button.addEventListener('click', (e) => {
-          const filmIndex = e.target.closest('li').dataset.index;
-          showSeatSelection(filmIndex);
+        const filmItem = e.target.closest('li');
+        const filmIndex = filmItem.dataset.index;
+        const selectedTime = filmItem.querySelector('.showtime-select').value;
+        showSeatSelection(filmIndex, selectedTime);
       });
   });
 });
 
-function showSeatSelection(filmIndex) {
+function showSeatSelection(filmIndex, showtime) {
   const seatContainer = document.getElementById('seats');
   seatContainer.innerHTML = '';
 
@@ -70,7 +78,6 @@ function showSeatSelection(filmIndex) {
       "E1", "E2", "E3", "E4", "E5"
   ];
 
-  // Tworzenie tabeli
   const table = document.createElement('table');
   table.classList.add('seat-table');
 
@@ -92,7 +99,6 @@ function showSeatSelection(filmIndex) {
 
   seatContainer.append(table);
 
-  // Dodanie przycisku rezerwacji
   const reserveButton = document.createElement('button');
   reserveButton.textContent = 'Zarezerwuj';
   reserveButton.classList.add('reserve-button');
@@ -102,18 +108,32 @@ function showSeatSelection(filmIndex) {
           alert('Please select at least one seat.');
           return;
       }
-      makeReservation(filmIndex, selectedSeats);
+      makeReservation(filmIndex, selectedSeats, showtime);
   });
   seatContainer.append(reserveButton);
+
+  const cancelButton = document.createElement('button');
+  cancelButton.textContent = 'Anuluj rezerwację';
+  cancelButton.classList.add('cancel-button');
+  cancelButton.addEventListener('click', () => {
+      const selectedSeats = Array.from(document.querySelectorAll('.seat.selected')).map(btn => btn.textContent);
+      if (selectedSeats.length === 0) {
+          alert('Please select at least one seat to cancel.');
+          return;
+      }
+      cancelReservation(filmIndex, selectedSeats, showtime);
+  });
+  seatContainer.append(cancelButton);
 }
 
-async function makeReservation(filmIndex, seats) {
+async function makeReservation(filmIndex, seats, showtime) {
   const envelope = `<?xml version="1.0"?>
   <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
                     xmlns:ser="http://service.cinema.rsi/">
       <soapenv:Body>
           <ser:makeReservation>
               <filmIndex>${filmIndex}</filmIndex>
+              <showtime>${showtime}</showtime>
               ${seats.map(seat => `<seats>${seat}</seats>`).join('')}
           </ser:makeReservation>
       </soapenv:Body>
@@ -121,4 +141,21 @@ async function makeReservation(filmIndex, seats) {
   const xml = await callSoap(envelope);
   const response = xml.getElementsByTagName('return')[0]?.textContent;
   alert(response || 'Reservation failed.');
+}
+
+async function cancelReservation(filmIndex, seats, showtime) {
+  const envelope = `<?xml version="1.0"?>
+  <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                    xmlns:ser="http://service.cinema.rsi/">
+      <soapenv:Body>
+          <ser:cancelReservation>
+              <filmIndex>${filmIndex}</filmIndex>
+              <showtime>${showtime}</showtime>
+              ${seats.map(seat => `<seats>${seat}</seats>`).join('')}
+          </ser:cancelReservation>
+      </soapenv:Body>
+  </soapenv:Envelope>`;
+  const xml = await callSoap(envelope);
+  const response = xml.getElementsByTagName('return')[0]?.textContent;
+  alert(response || 'Cancellation failed.');
 }
