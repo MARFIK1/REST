@@ -73,7 +73,7 @@ public class CinemaServiceImpl implements CinemaService {
         FilmInfo film = films.get(filmIndex);
 
         System.out.println("Showtime from client: " + showtime);
-System.out.println("Available showtimes: " + film.getShowtimes());
+        System.out.println("Available showtimes: " + film.getShowtimes());
     
         if (!film.getShowtimes().contains(showtime)) {
             return "Invalid showtime.";

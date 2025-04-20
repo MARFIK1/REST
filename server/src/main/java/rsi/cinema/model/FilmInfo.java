@@ -14,17 +14,17 @@ import java.util.List;
 import java.util.Map;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name="FilmInfo", propOrder={"title","director","actors","description","imageName", "showtimes", "seatsByShowtime"})
+@XmlType(name = "FilmInfo", propOrder = {"title", "director", "actors", "description", "imageName", "showtimes", "seatsByShowtime"})
 public class FilmInfo {
     private String title;
     private String director;
-    @XmlElementWrapper(name="actors")
-    @XmlElement(name="actor")
+    @XmlElementWrapper(name = "actors")
+    @XmlElement(name = "actor")
     private List<String> actors;
     private String description;
     private String imageName;
-    @XmlElementWrapper(name="showtimes")
-    @XmlElement(name="showtime")
+    @XmlElementWrapper(name = "showtimes")
+    @XmlElement(name = "showtime")
     private List<String> showtimes;
     @XmlJavaTypeAdapter(MapAdapter.class)
     private Map<String, List<String>> seatsByShowtime;

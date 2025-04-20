@@ -17,13 +17,15 @@ public class CinemaPublisher {
         HttpServer http = HttpServer.create(new InetSocketAddress(9999), 0);
         HttpContext ctx = http.createContext("/cinema");
         ctx.getFilters().add(new Filter() {
+
             @Override
             public String description() {
                 return "CORS";
             }
+
             @Override
             public void doFilter(HttpExchange ex, Chain chain) throws IOException {
-                ex.getResponseHeaders().add("Access-Control-Allow-Origin",  "*");
+                ex.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
                 ex.getResponseHeaders().add("Access-Control-Allow-Methods", "POST,OPTIONS");
                 ex.getResponseHeaders().add("Access-Control-Allow-Headers", "Content-Type,SOAPAction");
                 if ("OPTIONS".equalsIgnoreCase(ex.getRequestMethod())) {
@@ -32,12 +34,13 @@ public class CinemaPublisher {
                 }
                 chain.doFilter(ex);
             }
+
         });
 
         Endpoint ep = Endpoint.create(SOAPBinding.SOAP11HTTP_MTOM_BINDING, new CinemaServiceImpl());
         ep.publish(ctx);
-
         HttpContext imgCtx = http.createContext("/cinema/images");
+
         imgCtx.setHandler(ex -> {
             String full = ex.getRequestURI().getPath();
             String name = full.substring("/cinema/images/".length());
@@ -47,7 +50,7 @@ public class CinemaPublisher {
                 return;
             }
             byte[] buf = in.readAllBytes();
-            ex.getResponseHeaders().add("Content-Type","image/jpeg");
+            ex.getResponseHeaders().add("Content-Type", "image/jpeg");
             ex.sendResponseHeaders(200, buf.length);
             ex.getResponseBody().write(buf);
             ex.close();
