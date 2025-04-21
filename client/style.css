@@ -1,7 +1,57 @@
-#load {
-    margin-bottom: 1em;
+/* =====================
+    GLOBAL STYLES
+   ===================== */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f0f0f0;
 }
 
+h1, .film-title-large {
+    font-size: 3em;
+    color: #000;
+    margin-bottom: 0.5em;
+    font-weight: bold;
+}
+
+.film-title-large {
+    font-size: 4em;
+}
+
+.film-title {
+    font-size: 2.2em;
+    text-align: left;
+    font-weight: bold;
+    margin: 0 0 0.5em 0;
+    color: #000;
+}
+
+/* =====================
+    NAVIGATION BUTTONS
+   ===================== */
+.back-button, #load {
+    margin-bottom: 1em;
+    padding: 0.8rem 1.5rem;
+    font-size: 1.1rem;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 150px;
+    text-align: center;
+    display: block;
+}
+
+.back-button:hover, #load:hover {
+    background: #0056b3;
+}
+
+/* =====================
+    FILM LIST PAGE
+   ===================== */
 #films {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -13,19 +63,25 @@
 
 .film-item {
     margin-bottom: 1em;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    padding: 1.5rem;
+    cursor: pointer;
+}
+
+.film-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
 }
 
 .film-content {
     display: flex;
+    flex-direction: row;
     gap: 1em;
     align-items: flex-start;
-}
-
-.film-poster {
-    width: 200px;
-    height: auto;
-    border-radius: 4px;
-    flex-shrink: 0;
 }
 
 .film-details {
@@ -36,35 +92,164 @@
     white-space: normal;
 }
 
-.film-title {
-    text-align: left;
-    font-size: 1.3em;
-    font-weight: bold;
-    font-style: italic;
-    margin-top: 0;
-    margin-bottom: 0.2em;
+/* =====================
+    POSTERS
+   ===================== */
+.film-poster, .film-poster-large {
+    object-fit: contain;
+    border-radius: 16px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    height: auto;
 }
 
-.film-item ul {
-    list-style: disc;
-    margin: 0 0 0 1.5em;
+.film-poster {
+    width: 40%;
+}
+
+.film-poster-large {
+    width: 90%;
+    max-width: none;
+}
+
+/* =====================
+    TEXT CONTENT
+   ===================== */
+.film-director, .film-director-large {
+    font-size: 1.7em;
+    color: #000;
+    margin: 0.5em 0;
+}
+
+.film-director-large {
+    margin-bottom: 1em;
+}
+
+.film-description, .film-description-large {
+    font-size: 1.7em;
+    line-height: 1.6;
+    color: #000;
+    margin: 1em 0;
+}
+
+.film-description-large {
+    margin-bottom: 1.5em;
+}
+
+.actors-heading {
+    font-size: 1.7em;
+    margin-bottom: 0.5em;
+    color: #000;
+}
+
+.actors-list {
+    font-size: 1.7em;
+    margin: 0.5em 0;
+    padding-left: 1.5em;
+    color: #000;
+}
+
+.actors-list li {
+    margin-bottom: 0.5em;
+}
+
+/* =====================
+    FILM DETAILS PAGE
+   ===================== */
+.film-details-page {
+    margin: 2em 0;
+}
+
+.details-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+    width: 100%;
+    padding: 0;
+}
+
+.poster-column, .info-column, .booking-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.poster-column {
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding-right: 20px;
+}
+
+.info-column {
+    padding: 0 20px;
+}
+
+.booking-column {
+    padding-left: 20px;
+}
+
+/* =====================
+    BOOKING INTERFACE
+   ===================== */
+.showtime-area h2, .seats-area h2 {
+    font-size: 2em;
+    margin-bottom: 1em;
+    color: #000;
+}
+
+.seats-area h2 {
+    margin: 1.5em 0 1em 0;
+}
+
+.showtime-buttons {
+    display: flex;
+    gap: 1em;
+    flex-wrap: wrap;
+    margin: 20px 0 40px 0;
+}
+
+.showtime-btn {
+    padding: 1em 1.8em;
+    font-size: 1.5em;
+    background-color: #eee;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #000;
+}
+
+.showtime-btn:hover {
+    background-color: #ddd;
+    transform: translateY(-2px);
+}
+
+.showtime-btn.selected {
+    background-color: #4CAF50;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(76,175,80,0.3);
 }
 
 .seat-table {
-    border-collapse: collapse;
-    margin: 20px auto;
-}
-
-.seat-table td {
-    padding: 5px;
-    text-align: center;
+    border-collapse: separate;
+    border-spacing: 0.8em;
+    margin: 1.5em 0;
 }
 
 .seat {
-    padding: 10px 15px;
-    background-color: lightgray;
-    border: 1px solid black;
+    width: 3.5em;
+    height: 3.5em;
+    font-size: 1.5em;
+    background-color: #ddd;
+    border: none;
+    border-radius: 8px;
     cursor: pointer;
+    transition: all 0.3s ease;
+    color: #000;
+}
+
+.seat:hover {
+    background-color: #ccc;
+    transform: scale(1.05);
 }
 
 .seat.selected {
@@ -72,30 +257,103 @@
     color: white;
 }
 
-.reserve-button {
-    display: block;
-    margin: 20px auto;
-    padding: 10px 20px;
-    background-color: blue;
-    color: white;
+.reservation-buttons {
+    display: flex;
+    gap: 2em;
+    margin-top: 2.5em;
+    justify-content: flex-start;
+}
+
+.reserve-button, .cancel-button {
+    padding: 1.2em 2.4em;
+    font-size: 1.5em;
     border: none;
+    border-radius: 8px;
     cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+}
+
+.reserve-button {
+    background-color: green;
+    color: white;
 }
 
 .reserve-button:hover {
-    background-color: darkblue;
+    background-color: darkgreen;
+    transform: translateY(-2px);
 }
 
 .cancel-button {
-    display: block;
-    margin: 20px auto;
-    padding: 10px 20px;
     background-color: red;
     color: white;
-    border: none;
-    cursor: pointer;
 }
 
 .cancel-button:hover {
     background-color: darkred;
+    transform: translateY(-2px);
+}
+
+/* =====================
+    RESPONSIVE LAYOUT
+   ===================== */
+@media (max-width: 1200px) {
+    #films {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .details-container {
+        grid-template-columns: 1fr 1fr;
+        gap: 2em;
+    }
+    
+    .poster-column {
+        grid-column: 1;
+    }
+    
+    .info-column {
+        grid-column: 2;
+    }
+    
+    .booking-column {
+        grid-column: 1 / span 2;
+        margin-top: 2em;
+    }
+}
+
+@media (max-width: 768px) {
+    #films {
+        grid-template-columns: 1fr;
+    }
+    
+    .film-content {
+        flex-direction: column;
+    }
+    
+    .film-poster {
+        width: 100%;
+    }
+    
+    .details-container {
+        grid-template-columns: 1fr;
+        gap: 2em;
+    }
+    
+    .poster-column, .info-column, .booking-column {
+        grid-column: 1;
+    }
+    
+    .film-poster-large {
+        max-width: 300px;
+    }
+    
+    h1, .film-title-large, .film-title, 
+    .film-director-large, .film-director,
+    .film-description-large, .film-description,
+    .actors-heading, .actors-list,
+    .showtime-area h2, .seats-area h2,
+    .showtime-btn, .seat,
+    .reserve-button, .cancel-button {
+        font-size: 1.5em;
+    }
 }
