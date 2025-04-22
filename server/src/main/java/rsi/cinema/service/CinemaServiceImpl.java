@@ -1,20 +1,28 @@
 package rsi.cinema.service;
 
+import rsi.cinema.helpers.TokenValidator;
 import rsi.cinema.model.FilmInfo;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.jws.HandlerChain;
 import jakarta.jws.WebService;
+import jakarta.mail.internet.HeaderTokenizer.Token;
 import jakarta.activation.DataHandler;
 import jakarta.activation.FileDataSource;
 import jakarta.xml.ws.soap.MTOM;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @MTOM
+@HandlerChain(file = "/handler-chain.xml")
 @WebService(endpointInterface = "rsi.cinema.service.CinemaService")
 public class CinemaServiceImpl implements CinemaService {
     private final List<FilmInfo> films;
+    private final Map<String, String> users = new HashMap<>();
     public CinemaServiceImpl() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         try (InputStream in = getClass().getResourceAsStream("/films.json")) {
@@ -72,9 +80,6 @@ public class CinemaServiceImpl implements CinemaService {
     
         FilmInfo film = films.get(filmIndex);
 
-        System.out.println("Showtime from client: " + showtime);
-        System.out.println("Available showtimes: " + film.getShowtimes());
-    
         if (!film.getShowtimes().contains(showtime)) {
             return "Invalid showtime.";
         }
@@ -95,5 +100,23 @@ public class CinemaServiceImpl implements CinemaService {
         }
     
         return "Reservation cancelled for film: " + film.getTitle() + " at " + showtime + " for seats: " + String.join(", ", seats);
+    }
+
+    @Override
+    public String registerUser(String username, String password) {
+        boolean success = TokenValidator.registerUser(username, password);
+        if (!success) {
+            return "Username already exists.";
+        }
+        return "User registered successfully.";
+    }
+
+    @Override
+    public String loginUser(String username, String password) {
+        String token = TokenValidator.loginUser(username, password);
+        if (token == null) {
+            return "Invalid username or password.";
+        }
+        return token; // Zwracamy token, który klient zapisze i użyje do autoryzacji
     }
 }

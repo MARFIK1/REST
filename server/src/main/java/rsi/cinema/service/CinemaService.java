@@ -1,5 +1,6 @@
 package rsi.cinema.service;
 
+import jakarta.jws.HandlerChain;
 import rsi.cinema.model.FilmInfo;
 
 import jakarta.jws.WebService;
@@ -9,6 +10,7 @@ import jakarta.jws.WebParam;
 import jakarta.activation.DataHandler;
 import java.util.List;
 
+@HandlerChain(file = "/handler-chain.xml")
 @WebService
 @SOAPBinding(style = SOAPBinding.Style.DOCUMENT, use = SOAPBinding.Use.LITERAL)
 public interface CinemaService {
@@ -23,4 +25,10 @@ public interface CinemaService {
 
     @WebMethod
     String cancelReservation(@WebParam(name = "filmIndex") int filmIndex, @WebParam(name = "showtime") String showtime, @WebParam(name = "seats") List<String> seats);
+
+    @WebMethod
+    String registerUser(@WebParam(name = "username") String username, @WebParam(name = "password") String password);
+
+    @WebMethod
+    String loginUser(@WebParam(name = "username") String username, @WebParam(name = "password") String password);
 }
