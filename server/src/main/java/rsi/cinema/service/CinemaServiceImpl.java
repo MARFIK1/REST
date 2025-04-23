@@ -8,21 +8,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.jws.HandlerChain;
 import jakarta.jws.WebService;
-import jakarta.mail.internet.HeaderTokenizer.Token;
 import jakarta.activation.DataHandler;
 import jakarta.activation.FileDataSource;
 import jakarta.xml.ws.soap.MTOM;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @MTOM
 @HandlerChain(file = "/handler-chain.xml")
 @WebService(endpointInterface = "rsi.cinema.service.CinemaService")
 public class CinemaServiceImpl implements CinemaService {
     private final List<FilmInfo> films;
-    private final Map<String, String> users = new HashMap<>();
     public CinemaServiceImpl() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         try (InputStream in = getClass().getResourceAsStream("/films.json")) {
@@ -108,6 +104,7 @@ public class CinemaServiceImpl implements CinemaService {
         if (!success) {
             return "Username already exists.";
         }
+        System.out.println("Zarejestrowano użytkownika: " + username);
         return "User registered successfully.";
     }
 

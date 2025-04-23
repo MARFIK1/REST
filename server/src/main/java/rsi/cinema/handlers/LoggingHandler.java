@@ -26,9 +26,9 @@ public class LoggingHandler implements SOAPHandler<SOAPMessageContext> {
                 // Pobierz nazwę metody z kontekstu SOAP
                 QName operationQName = (QName) context.get(MessageContext.WSDL_OPERATION);
                 String methodName = operationQName.getLocalPart(); // Pobierz nazwę metody jako String
-                if ("registerUser".equals(methodName) || "loginUser".equals(methodName)) {
+                if ("registerUser".equals(methodName) || "loginUser".equals(methodName) || "getFilmList".equals(methodName)) {
                     // Pomijamy weryfikację tokenu dla tych metod
-                    System.out.println("Skipping token validation for method: " + methodName);
+                    // System.out.println("Skipping token validation for method: " + methodName);
                     return true;
                 }
 

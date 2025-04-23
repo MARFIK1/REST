@@ -1,14 +1,24 @@
 async function callSoap(body) {
-    const resp = await fetch('http://localhost:9999/cinema', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'text/xml; charset=utf-8',
-            'SOAPAction': '""'
-        },
-        body
-    });
-    const text = await resp.text();
-    return new DOMParser().parseFromString(text, 'application/xml');
+    try {
+        const resp = await fetch('http://localhost:9999/cinema', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/xml; charset=utf-8',
+                'SOAPAction': '""'
+            },
+            body: body
+        });
+        
+        if (!resp.ok) {
+            throw new Error(`HTTP error! status: ${resp.status}`);
+        }
+        
+        const text = await resp.text();
+        return new DOMParser().parseFromString(text, 'application/xml');
+    } catch (error) {
+        console.error('SOAP request failed:', error);
+        throw error;
+    }
 }
 
 async function loadFilms() {
@@ -19,37 +29,67 @@ async function loadFilms() {
             <ser:getFilmList/>
         </soapenv:Body>
     </soapenv:Envelope>`;
-    const xml = await callSoap(envelope);
-    const items = Array.from(xml.getElementsByTagName('return'));
-    const ul = document.getElementById('films');
-    ul.innerHTML = '';
+    
+    try {
+        const xml = await callSoap(envelope);
+        const fault = xml.getElementsByTagName('Fault')[0];
 
-    items.forEach((node, index) => {
-        const t = node.getElementsByTagName('title')[0].textContent;
-        const d = node.getElementsByTagName('director')[0].textContent;
-        const desc = node.getElementsByTagName('description')[0].textContent;
-        const imageName = node.getElementsByTagName('imageName')[0].textContent;
-        const li = document.createElement('li');
-        li.classList.add('film-item');
+        if (fault) {
+            const faultString = fault.getElementsByTagName('faultstring')[0]?.textContent;
+            throw new Error(`SOAP Fault: ${faultString}`);
+        }
         
-        li.innerHTML =
-            `<div class="film-content">
-                <img class="film-poster" src="http://localhost:9999/cinema/images/${imageName}" alt="${t}">
-                <div class="film-details">
-                    <h2 class="film-title">${t}</h2>
-                    <p class="film-director"><strong>Director:</strong> ${d}</p>
-                    <p class="film-description"><strong>Description:</strong> ${desc}</p>
-                </div>
-            </div>`;
-        ul.append(li);
-        li.style.cursor = 'pointer';
-        li.addEventListener('click', () => {
-            window.location.href = `film.html?filmIndex=${index}`;
-        });
-    });
+        const items = Array.from(xml.getElementsByTagName('return'));
+        
+        if (!items || items.length === 0) {
+            document.getElementById('films').innerHTML = 
+                '<div style="color: red; text-align: center; padding: 20px;">Nie można załadować listy filmów</div>';
+            return false;
+        }
+        
+        const ul = document.getElementById('films');
+        ul.innerHTML = '';
+        
+        items.forEach((node, index) => {
+            const t = node.getElementsByTagName('title')[0].textContent;
+            const d = node.getElementsByTagName('director')[0].textContent;
+            const desc = node.getElementsByTagName('description')[0].textContent;
+            const imageName = node.getElementsByTagName('imageName')[0].textContent;
+            const li = document.createElement('li');
+            li.classList.add('film-item');
+            const imageUrl = `http://localhost:9999/cinema/images/${imageName}`;
+            
+            li.innerHTML =
+                `<div class="film-content">
+                    <img class="film-poster" src="${imageUrl}" alt="${t}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22150%22><rect fill=%22%23ddd%22 width=%22100%22 height=%22150%22/><text fill=%22%23555%22 x=%2250%22 y=%2275%22 text-anchor=%22middle%22>Brak obrazu</text></svg>'">
+                    <div class="film-details">
+                        <h2 class="film-title">${t}</h2>
+                        <p class="film-director"><strong>Director:</strong> ${d}</p>
+                        <p class="film-description">${desc}</p>
+                    </div>
+                </div>`;
+            ul.append(li);
+            li.style.cursor = 'pointer';
 
-    document.getElementById('load').textContent = 'Ukryj filmy';
-    document.getElementById('load').dataset.state = 'shown';
+            li.addEventListener('click', () => {
+                window.location.href = `film.html?filmIndex=${index}`;
+            });
+        });
+
+        document.getElementById('load').textContent = 'Hide films';
+        document.getElementById('load').dataset.state = 'shown';        
+        document.getElementById('films').style.display = 'grid';
+        return true;
+    } catch (error) {
+        console.error('Error loading films:', error);
+        
+        document.getElementById('films').innerHTML = 
+            `<div style="color: red; text-align: center; padding: 20px;">
+                Błąd podczas wczytywania filmów: ${error.message}
+                <br>Sprawdź czy serwer jest uruchomiony lub spróbuj ponownie później.
+            </div>`;
+        return false;
+    }
 }
 
 function toggleFilms() {
@@ -73,6 +113,12 @@ function toggleFilms() {
 }
 
 document.getElementById('load').addEventListener('click', toggleFilms);
-document.addEventListener('DOMContentLoaded', async () => {
-    await loadFilms();
+
+document.addEventListener('DOMContentLoaded', () => {
+    const filmsContainer = document.getElementById('films');
+    filmsContainer.style.display = 'grid';
+    const loadButton = document.getElementById('load');
+    loadButton.textContent = 'Hide films';
+    loadButton.dataset.state = 'shown';
+    loadFilms();
 });
