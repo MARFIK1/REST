@@ -18,17 +18,14 @@ public class LoggingHandler implements SOAPHandler<SOAPMessageContext> {
     public boolean handleMessage(SOAPMessageContext context) {
         Boolean isOutbound = (Boolean) context.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
 
-        if (!isOutbound) { // Inbound message
+        if (!isOutbound) {
             try {
                 SOAPMessage message = context.getMessage();
                 SOAPHeader header = message.getSOAPHeader();
 
-                // Pobierz nazwę metody z kontekstu SOAP
                 QName operationQName = (QName) context.get(MessageContext.WSDL_OPERATION);
-                String methodName = operationQName.getLocalPart(); // Pobierz nazwę metody jako String
+                String methodName = operationQName.getLocalPart();
                 if ("registerUser".equals(methodName) || "loginUser".equals(methodName) || "getFilmList".equals(methodName)) {
-                    // Pomijamy weryfikację tokenu dla tych metod
-                    // System.out.println("Skipping token validation for method: " + methodName);
                     return true;
                 }
 
@@ -44,11 +41,14 @@ public class LoggingHandler implements SOAPHandler<SOAPMessageContext> {
                     String token = element.getValue();
                     System.out.println("Authorization token: " + token);
 
-                    // Walidacja tokenu
                     if (!TokenValidator.isTokenValid(token)) {
                         throw new RuntimeException("Invalid token");
                     }
                     System.out.println("Authenticated user: " + TokenValidator.getUsernameFromToken(token));
+
+                    context.put("authToken", token);
+                    context.setScope("authToken", MessageContext.Scope.APPLICATION);
+            
                 } else {
                     throw new RuntimeException("Missing Authorization token");
                 }
@@ -57,7 +57,7 @@ public class LoggingHandler implements SOAPHandler<SOAPMessageContext> {
             }
         }
 
-        return true; // Continue processing the message
+        return true;
     }
 
     @Override
@@ -65,21 +65,20 @@ public class LoggingHandler implements SOAPHandler<SOAPMessageContext> {
         System.err.println("SOAP Fault occurred:");
         try {
             SOAPMessage message = context.getMessage();
-            message.writeTo(System.err); // Log the fault message
+            message.writeTo(System.err);
             System.err.println();
         } catch (Exception e) {
             System.err.println("Error logging SOAP fault: " + e.getMessage());
         }
-        return true; // Continue processing the fault
+        return true;
     }
 
     @Override
     public void close(MessageContext context) {
-        // No cleanup necessary
     }
 
     @Override
     public Set<QName> getHeaders() {
-        return null; // No specific headers to process
+        return null;
     }
 }

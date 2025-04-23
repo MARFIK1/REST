@@ -8,6 +8,16 @@ function setupNavbar() {
     navbar.appendChild(brand);
     const authActions = document.createElement('div');
     authActions.className = 'navbar-auth';
+
+    const reservationsBtn = document.createElement('button');
+    reservationsBtn.id = 'navReservationsBtn';
+    reservationsBtn.className = 'navbar-button';
+    reservationsBtn.textContent = 'My Reservations';
+    reservationsBtn.addEventListener('click', function() {
+        window.location.href = 'reservations.html';
+    });
+    authActions.appendChild(reservationsBtn);
+
     const authBtn = document.createElement('button');
     authBtn.id = 'navAuthBtn';
     authBtn.className = 'navbar-button';

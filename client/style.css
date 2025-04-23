@@ -64,7 +64,7 @@ h1, .film-title-large {
     font-size: 0.9rem;
     background-color: #007bff;
     color: white;
-    border: none;
+    border: relative;
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.3s;
@@ -301,6 +301,12 @@ h1, .film-title-large {
 
 .seat.selected {
     background-color: green;
+    color: white;
+}
+
+.seat.occupied {
+    background-color: gray;
+    cursor: not-allowed;
     color: white;
 }
 
@@ -545,4 +551,84 @@ h1, .film-title-large {
         padding: 0.3em 0.8em;
         font-size: 0.8rem;
     }
+}
+
+/* =====================
+    RESERVATIONS PAGE
+   ===================== */
+   .reservations-container {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+.reservation-item {
+    margin-bottom: 15px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background-color: #f9f9f9;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.reservation-item h2 {
+    margin: 0 0 10px;
+    font-size: 1.5em;
+    color: #333;
+}
+
+.reservation-item p {
+    margin: 5px 0;
+    font-size: 1em;
+    color: #555;
+}
+
+.cancel-reservation-btn {
+    align-self: flex-start;
+    padding: 8px 16px;
+    font-size: 14px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.cancel-reservation-btn:hover {
+    background-color: #c82333;
+}
+
+.filter-container {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-start;
+}
+
+#filter-input {
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    flex: 1;
+}
+
+#filter-button {
+    padding: 10px 20px;
+    font-size: 14px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#filter-button:hover {
+    background-color: #0056b3;
 }

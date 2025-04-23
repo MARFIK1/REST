@@ -98,12 +98,12 @@ function toggleFilms() {
     
     if (loadButton.dataset.state === 'shown') {
         filmsContainer.style.display = 'none';
-        loadButton.textContent = 'Pokaż filmy';
+        loadButton.textContent = 'Show films';
         loadButton.dataset.state = 'hidden';
     }
     else {
         filmsContainer.style.display = 'grid';
-        loadButton.textContent = 'Ukryj filmy';
+        loadButton.textContent = 'Hide films';
         loadButton.dataset.state = 'shown';
 
         if (filmsContainer.children.length === 0) {
