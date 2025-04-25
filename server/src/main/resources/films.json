@@ -24,5 +24,18 @@
       "17:00": ["A1", "A2", "A3", "A4", "A5", "B1", "B2", "B3", "B4", "B5", "C1", "C2", "C3", "C4", "C5", "D1", "D2", "D3", "D4", "D5", "E1", "E2", "E3", "E4", "E5"],
       "20:00": ["A1", "A2", "A3", "A4", "A5", "B1", "B2", "B3", "B4", "B5", "C1", "C2", "C3", "C4", "C5", "D1", "D2", "D3", "D4", "D5", "E1", "E2", "E3", "E4", "E5"]
     }
+  },
+  {
+    "title": "Sonic 3: Szybki jak błyskawica",
+    "director": "Jeff Fowler",
+    "actors": ["Jim Carrey", "Ben Schwartz", "Keanue Reeves", "Idris Elba", "Colleen O'Shaughnessey", "James Marsden"],
+    "description": "Złowrogi Doktor Robotnik powraca z zamiarem kontynuowania projektu swojego dziadka a następnie zniszczenia świata. Drużyna Sonica zmuszona jest po raz kolejny stanąć do walki.",
+    "imageName": "sonic.jpg",
+    "showtimes": ["13:00", "16:00", "19:00"],
+    "seatsByShowtime": {
+      "13:00": ["A1", "A2", "A3", "A4", "A5", "B1", "B2", "B3", "B4", "B5", "C1", "C2", "C3", "C4", "C5", "D1", "D2", "D3", "D4", "D5", "E1", "E2", "E3", "E4", "E5"],
+      "16:00": ["A1", "A2", "A3", "A4", "A5", "B1", "B2", "B3", "B4", "B5", "C1", "C2", "C3", "C4", "C5", "D1", "D2", "D3", "D4", "D5", "E1", "E2", "E3", "E4", "E5"],
+      "19:00": ["A1", "A2", "A3", "A4", "A5", "B1", "B2", "B3", "B4", "B5", "C1", "C2", "C3", "C4", "C5", "D1", "D2", "D3", "D4", "D5", "E1", "E2", "E3", "E4", "E5"]
+    }
   }
 ]

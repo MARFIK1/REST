@@ -266,7 +266,6 @@ async function getOccupiedSeats(filmIndex, showtime) {
         return Array.from(xml.getElementsByTagName('return')).map(seat => seat.textContent);
     } catch (error) {
         console.error('Error fetching occupied seats:', error);
-        alert('Failed to load occupied seats. Please try again later.');
         return [];
     }
 }
