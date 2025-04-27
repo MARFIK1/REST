@@ -557,6 +557,9 @@ h1, .film-title-large {
     RESERVATIONS PAGE
    ===================== */
    .reservations-container {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0.8em;
     margin-top: 20px;
     padding: 15px;
     background-color: #fff;
@@ -565,6 +568,7 @@ h1, .film-title-large {
 }
 
 .reservation-item {
+    align-self: flex-start;
     margin-bottom: 15px;
     padding: 15px;
     border: 1px solid #ddd;
@@ -597,6 +601,22 @@ h1, .film-title-large {
     border-radius: 6px;
     cursor: pointer;
     transition: background-color 0.3s;
+}
+
+.generate-pdf-btn {
+    align-self: flex-start;
+    padding: 10px 20px;
+    font-size: 14px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.generate-pdf-btn:hover {
+    background-color: #218838;
 }
 
 .cancel-reservation-btn:hover {

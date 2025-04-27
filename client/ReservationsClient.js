@@ -86,8 +86,13 @@ function displayReservations(reservations) {
             <h2>${filmTitle}</h2>
             <p><strong>Showtime:</strong> ${showtime}</p>
             <p><strong>Seats:</strong> ${seats.join(', ')}</p>
+            <button class="generate-pdf-btn">Generate PDF</button>
             <button class="cancel-reservation-btn">Cancel</button>
         `;
+
+        reservationDiv.querySelector('.generate-pdf-btn').addEventListener('click', () => {
+            generatePDF(filmTitle, showtime, seats);
+        });
 
         reservationDiv.querySelector('.cancel-reservation-btn').addEventListener('click', () => {
             cancelReservation(filmTitle, showtime, seats);
@@ -139,6 +144,27 @@ async function cancelReservation(filmTitle, showtime, seats) {
     }
 }
 
+async function generatePDF(filmTitle, showtime, seats) {
+    const envelope = `<?xml version="1.0"?>
+    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+                      xmlns:ser="http://service.cinema.rsi/">
+        <soapenv:Body>
+            <ser:generatePDF>
+                <filmTitle>${filmTitle}</filmTitle>
+                <showtime>${showtime}</showtime>
+                ${seats.map(seat => `<seats>${seat}</seats>`).join('')}
+            </ser:generatePDF>
+        </soapenv:Body>
+    </soapenv:Envelope>`;
+
+    try {
+        const xml = await callSoap(envelope);
+    } catch (error) {
+        console.error('Error generating PDF:', error);
+        alert('An error occurred while generating the PDF.');
+    }
+}
+ 
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('filter-button').addEventListener('click', filterReservations);
 

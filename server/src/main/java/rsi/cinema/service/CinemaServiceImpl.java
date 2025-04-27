@@ -6,6 +6,14 @@ import rsi.cinema.model.Reservation;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
 
 import jakarta.jws.HandlerChain;
 import jakarta.jws.WebService;
@@ -16,6 +24,7 @@ import jakarta.xml.ws.WebServiceContext;
 import jakarta.xml.ws.soap.MTOM;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -218,5 +227,49 @@ public class CinemaServiceImpl implements CinemaService {
             }
         }
         return allSeats;
+    }
+
+    @Override
+    public void generatePDF(String filmTitle, String showtime, List<String> seats) {
+        try {
+            Document document = new Document();
+            PdfWriter.getInstance(document, new FileOutputStream("Reservation_" + filmTitle.replaceAll("[ :]", "_") + "_" + showtime.replaceAll(":", "_") + "_Confirmation.pdf"));
+            BaseFont baseFont = BaseFont.createFont("c:/windows/fonts/arial.ttf", BaseFont.CP1250, BaseFont.EMBEDDED);
+            Font font = new Font(baseFont, 12, Font.NORMAL);
+            document.open();
+            PdfPTable table = new PdfPTable(2);
+            table.addCell(new PdfPCell(new Phrase("Film Title:", font)));
+            table.addCell(new PdfPCell(new Phrase(filmTitle, font)));
+            table.addCell(new PdfPCell(new Phrase("Showtime:", font)));
+            table.addCell(new PdfPCell(new Phrase(showtime, font)));
+            table.addCell(new PdfPCell(new Phrase("Seats:", font)));
+            table.addCell(new PdfPCell(new Phrase(String.join(", ", seats), font)));
+            films.stream()
+                .filter(film -> film.getTitle().equals(filmTitle))
+                .findFirst()
+                .ifPresent(film -> {
+                    try {
+                        table.addCell(new PdfPCell(new Phrase("Director:", font)));
+                        table.addCell(new PdfPCell(new Phrase(film.getDirector(), font)));
+                        table.addCell(new PdfPCell(new Phrase("Actors:", font)));
+                        table.addCell(new PdfPCell(new Phrase(String.join(", ", film.getActors()), font)));
+                        table.addCell(new PdfPCell(new Phrase("Description:", font)));
+                        table.addCell(new PdfPCell(new Phrase(film.getDescription(), font)));
+                        Image image = Image.getInstance(getClass().getResource("/images/" + film.getImageName()));
+                        image.scaleToFit(500, 500);
+                        PdfPCell cell = new PdfPCell(image);
+                        cell.setColspan(2);
+                        cell.setHorizontalAlignment(PdfPCell.ALIGN_CENTER);
+                        table.addCell(cell);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+            document.add(table);
+            document.close();   
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("Generating PDF for film: " + filmTitle + ", showtime: " + showtime + ", seats: " + String.join(", ", seats));
     }
 }

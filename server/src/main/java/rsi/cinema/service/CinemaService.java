@@ -37,4 +37,7 @@ public interface CinemaService {
 
     @WebMethod
     List<String> getOccupiedSeats(@WebParam(name = "filmIndex") int filmIndex, @WebParam(name = "showtime") String showtime);
+
+    @WebMethod
+    void generatePDF(@WebParam(name = "filmTitle") String filmTitle, @WebParam(name = "showtime") String showtime, @WebParam(name = "seats") List<String> seats);
 }
