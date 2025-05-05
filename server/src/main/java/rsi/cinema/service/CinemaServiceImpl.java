@@ -93,20 +93,25 @@ public class CinemaServiceImpl implements CinemaService {
     }
 
     @Override
-    public String makeReservation(int filmIndex, String showtime, List<String> seats) {
+    public String makeReservation(int filmIndex, String day, String showtime, List<String> seats) {
         if (filmIndex < 0 || filmIndex >= films.size()) {
             return "Invalid film index.";
         }
 
         FilmInfo film = films.get(filmIndex);
-
-        if (!film.getShowtimes().contains(showtime)) {
-            return "Invalid showtime.";
+        
+        if (!film.getSchedule().containsKey(day)) {
+            return "Invalid day.";
+        }
+        
+        if (!film.getSchedule().get(day).contains(showtime)) {
+            return "Invalid showtime for the selected day.";
         }
 
-        List<String> availableSeats = film.getSeatsByShowtime().get(showtime);
-        if (availableSeats == null) {
-            return "No seat information available for the selected showtime.";
+        List<String> availableSeats = film.getAvailableSeats(day, showtime);
+
+        if (availableSeats == null || availableSeats.isEmpty()) {
+            return "No seats available for the selected showtime.";
         }
 
         for (String seat : seats) {
@@ -116,7 +121,7 @@ public class CinemaServiceImpl implements CinemaService {
         }
 
         for (String seat : seats) {
-            availableSeats.remove(seat);
+            film.removeSeat(day, showtime, seat);
         }
 
         String username = TokenValidator.getUsernameFromToken(wsContext.getMessageContext().get("authToken").toString());
@@ -124,16 +129,16 @@ public class CinemaServiceImpl implements CinemaService {
             return "Invalid token. Please log in again.";
         }
 
-        Reservation reservation = new Reservation(username, film.getTitle(), showtime, seats);
+        Reservation reservation = new Reservation(username, film.getTitle(), day, showtime, seats);
         reservations.add(reservation);
 
         saveReservationsToFile();
 
-        return "Reservation successful for film: " + film.getTitle() + " at " + showtime + " for seats: " + String.join(", ", seats);
+        return "Reservation successful for film: " + film.getTitle() + " on " + day + " at " + showtime + " for seats: " + String.join(", ", seats);
     }
 
     @Override
-    public String cancelReservation(String filmTitle, String showtime, List<String> seats) {
+    public String cancelReservation(String filmTitle, String day, String showtime, List<String> seats) {
         FilmInfo film = films.stream()
                 .filter(f -> f.getTitle().equals(filmTitle))
                 .findFirst()
@@ -143,30 +148,28 @@ public class CinemaServiceImpl implements CinemaService {
             return "Invalid film title.";
         }
 
-        if (!film.getShowtimes().contains(showtime)) {
-            return "Invalid showtime.";
+        if (!film.getSchedule().containsKey(day)) {
+            return "Invalid day.";
         }
 
-        List<String> availableSeats = film.getSeatsByShowtime().get(showtime);
-        if (availableSeats == null) {
-            return "No seat information available for the selected showtime.";
+        if (!film.getSchedule().get(day).contains(showtime)) {
+            return "Invalid showtime for the selected day.";
         }
 
         for (String seat : seats) {
-            if (!availableSeats.contains(seat)) {
-                availableSeats.add(seat);
-            }
+            film.addSeat(day, showtime, seat);
         }
 
         boolean removed = reservations.removeIf(reservation ->
                 reservation.getFilmTitle().equals(film.getTitle()) &&
+                reservation.getDay().equals(day) &&
                 reservation.getShowtime().equals(showtime) &&
                 reservation.getSeats().containsAll(seats)
         );
 
         if (removed) {
             saveReservationsToFile();
-            return "Reservation cancelled for film: " + film.getTitle() + " at " + showtime + " for seats: " + String.join(", ", seats);
+            return "Reservation cancelled for film: " + film.getTitle() + " on " + day + " at " + showtime + " for seats: " + String.join(", ", seats);
         } else {
             return "Reservation not found.";
         }
@@ -209,20 +212,26 @@ public class CinemaServiceImpl implements CinemaService {
     }
 
     @Override
-    public List<String> getOccupiedSeats(int filmIndex, String showtime) {
+    public List<String> getOccupiedSeats(int filmIndex, String day, String showtime) {
         if (filmIndex < 0 || filmIndex >= films.size()) {
             throw new IllegalArgumentException("Invalid film index.");
         }
 
         FilmInfo film = films.get(filmIndex);
 
-        if (!film.getShowtimes().contains(showtime)) {
-            throw new IllegalArgumentException("Invalid showtime.");
+        if (!film.getSchedule().containsKey(day)) {
+            throw new IllegalArgumentException("Invalid day.");
+        }
+
+        if (!film.getSchedule().get(day).contains(showtime)) {
+            throw new IllegalArgumentException("Invalid showtime for the selected day.");
         }
 
         List<String> allSeats = new ArrayList<>();
         for(Reservation reservation : reservations) {
-            if (reservation.getFilmTitle().equals(film.getTitle()) && reservation.getShowtime().equals(showtime)) {
+            if (reservation.getFilmTitle().equals(film.getTitle()) && 
+                reservation.getDay().equals(day) &&
+                reservation.getShowtime().equals(showtime)) {
                 allSeats.addAll(reservation.getSeats());
             }
         }
@@ -230,16 +239,18 @@ public class CinemaServiceImpl implements CinemaService {
     }
 
     @Override
-    public void generatePDF(String filmTitle, String showtime, List<String> seats) {
+    public void generatePDF(String filmTitle, String day, String showtime, List<String> seats) {
         try {
             Document document = new Document();
-            PdfWriter.getInstance(document, new FileOutputStream("Reservation_" + filmTitle.replaceAll("[ :]", "_") + "_" + showtime.replaceAll(":", "_") + "_Confirmation.pdf"));
+            PdfWriter.getInstance(document, new FileOutputStream("Reservation_" + filmTitle.replaceAll("[ :]", "_") + "_" + day + "_" + showtime.replaceAll(":", "_") + "_Confirmation.pdf"));
             BaseFont baseFont = BaseFont.createFont("c:/windows/fonts/arial.ttf", BaseFont.CP1250, BaseFont.EMBEDDED);
             Font font = new Font(baseFont, 12, Font.NORMAL);
             document.open();
             PdfPTable table = new PdfPTable(2);
             table.addCell(new PdfPCell(new Phrase("Film Title:", font)));
             table.addCell(new PdfPCell(new Phrase(filmTitle, font)));
+            table.addCell(new PdfPCell(new Phrase("Day:", font)));
+            table.addCell(new PdfPCell(new Phrase(day, font)));
             table.addCell(new PdfPCell(new Phrase("Showtime:", font)));
             table.addCell(new PdfPCell(new Phrase(showtime, font)));
             table.addCell(new PdfPCell(new Phrase("Seats:", font)));
@@ -270,6 +281,6 @@ public class CinemaServiceImpl implements CinemaService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        System.out.println("Generating PDF for film: " + filmTitle + ", showtime: " + showtime + ", seats: " + String.join(", ", seats));
+        System.out.println("Generating PDF for film: " + filmTitle + ", day: " + day + ", showtime: " + showtime + ", seats: " + String.join(", ", seats));
     }
 }

@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "FilmInfo", propOrder = {"title", "director", "actors", "description", "imageName", "showtimes", "seatsByShowtime"})
+@XmlType(name = "FilmInfo", propOrder = {"title", "director", "actors", "description", "imageName", "schedule"})
 public class FilmInfo {
     private String title;
     private String director;
@@ -23,31 +23,48 @@ public class FilmInfo {
     private List<String> actors;
     private String description;
     private String imageName;
-    @XmlElementWrapper(name = "showtimes")
-    @XmlElement(name = "showtime")
-    private List<String> showtimes;
     @XmlJavaTypeAdapter(MapAdapter.class)
-    private Map<String, List<String>> seatsByShowtime;
+    private Map<String, List<String>> schedule;
+    private transient Map<String, Map<String, List<String>>> seatsBySchedule;
 
     public FilmInfo() {}
-    public FilmInfo(String title, String director, List<String> actors, String description, String imageName, List<String> showtimes) {
+    
+    public FilmInfo(String title, String director, List<String> actors, String description, String imageName, Map<String, List<String>> schedule) {
         this.title = title;
         this.director = director;
         this.actors = actors;
         this.description = description;
         this.imageName = imageName;
-        this.showtimes = showtimes;
-        this.seatsByShowtime = new HashMap<>();
-        for (String showtime : showtimes) {
-            this.seatsByShowtime.put(showtime, new ArrayList<>(List.of(
-                "A1", "A2", "A3", "A4", "A5",
-                "B1", "B2", "B3", "B4", "B5",
-                "C1", "C2", "C3", "C4", "C5",
-                "D1", "D2", "D3", "D4", "D5",
-                "E1", "E2", "E3", "E4", "E5"
-            )));
+        this.schedule = schedule;
+        this.seatsBySchedule = new HashMap<>();
+        
+        for (Map.Entry<String, List<String>> entry : schedule.entrySet()) {
+            String day = entry.getKey();
+            List<String> showtimes = entry.getValue();
+            Map<String, List<String>> timeSeats = new HashMap<>();
+
+            for (String showtime : showtimes) {
+                timeSeats.put(showtime, generateStandardTheaterLayout());
+            }
+            
+            this.seatsBySchedule.put(day, timeSeats);
         }
     }
+    
+    private List<String> generateStandardTheaterLayout() {
+        List<String> seats = new ArrayList<>();
+        char[] rows = {'A', 'B', 'C', 'D', 'E'};
+        int seatsPerRow = 5;
+        
+        for (char row : rows) {
+            for (int seatNum = 1; seatNum <= seatsPerRow; seatNum++) {
+                seats.add(row + String.valueOf(seatNum));
+            }
+        }
+        
+        return seats;
+    }
+    
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
     public String getDirector() { return director; }
@@ -58,8 +75,40 @@ public class FilmInfo {
     public void setDescription(String description) { this.description = description; }
     public String getImageName() { return imageName; }
     public void setImageName(String imageName) { this.imageName = imageName; }
-    public List<String> getShowtimes() { return showtimes; }
-    public void setShowtimes(List<String> showtimes) { this.showtimes = showtimes; }
-    public Map<String, List<String>> getSeatsByShowtime() { return seatsByShowtime; }
-    public void setSeatsByShowtime(Map<String, List<String>> seatsByShowtime) { this.seatsByShowtime = seatsByShowtime; }
+    public Map<String, List<String>> getSchedule() { return schedule; }
+    public void setSchedule(Map<String, List<String>> schedule) { this.schedule = schedule; }
+    
+    public List<String> getAvailableSeats(String day, String showtime) {
+        if (seatsBySchedule == null) {
+            seatsBySchedule = new HashMap<>();
+        }
+        
+        Map<String, List<String>> daySeats = seatsBySchedule.get(day);
+
+        if (daySeats == null) {
+            daySeats = new HashMap<>();
+            seatsBySchedule.put(day, daySeats);
+        }
+        
+        List<String> seats = daySeats.get(showtime);
+        
+        if (seats == null) {
+            seats = generateStandardTheaterLayout();
+            daySeats.put(showtime, seats);
+        }
+        
+        return seats;
+    }
+    
+    public void removeSeat(String day, String showtime, String seat) {
+        List<String> seats = getAvailableSeats(day, showtime);
+        seats.remove(seat);
+    }
+    
+    public void addSeat(String day, String showtime, String seat) {
+        List<String> seats = getAvailableSeats(day, showtime);
+        if (!seats.contains(seat)) {
+            seats.add(seat);
+        }
+    }
 }

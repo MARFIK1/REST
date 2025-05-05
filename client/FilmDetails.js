@@ -66,9 +66,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (error) {
         console.error("Error loading film details:", error);
         document.getElementById('film-details').innerHTML = 
-            `<div style="color: red; text-align: center; padding: 20px;">
-                Błąd podczas wczytywania szczegółów filmu: ${error.message}
-                <br>Sprawdź czy serwer jest uruchomiony lub spróbuj ponownie później.
+            `<div class="error-message">
+                Error loading film details: ${error.message}
+                <br>Please check if the server is running or try again later.
             </div>`;
     }
 });
@@ -79,7 +79,25 @@ async function displayFilmDetails(film, filmIndex, authToken) {
     const description = film.getElementsByTagName('description')[0].textContent;
     const actors = Array.from(film.getElementsByTagName('actor')).map(el => el.textContent);
     const imageName = film.getElementsByTagName('imageName')[0].textContent;
-    const showtimes = Array.from(film.getElementsByTagName('showtime')).map(el => el.textContent);
+    const scheduleEntries = Array.from(film.getElementsByTagName('entry'));
+    const schedule = {};
+    
+    scheduleEntries.forEach(entry => {
+        const day = entry.getElementsByTagName('key')[0].textContent;
+        const valueElements = entry.getElementsByTagName('value');
+        let showtimes = [];
+
+        if (valueElements && valueElements.length > 0) {
+            for (let i = 0; i < valueElements.length; i++) {
+                const valueText = valueElements[i].textContent.trim();
+                if (valueText) {
+                    showtimes.push(valueText);
+                }
+            }
+        }
+
+        schedule[day] = showtimes;
+    });
 
     const detailsContainer = document.createElement('div');
     detailsContainer.classList.add('details-container');
@@ -92,17 +110,19 @@ async function displayFilmDetails(film, filmIndex, authToken) {
     bookingColumn.classList.add('booking-column');
 
     if (authToken) {
-        const showtimesSection = createShowtimesSection(showtimes, filmIndex);
+        const daysSection = createDaysSection(schedule, filmIndex);
+        const showtimesSection = createShowtimesSection();
         const seatsSection = createSeatsSection();
 
+        bookingColumn.appendChild(daysSection);
         bookingColumn.appendChild(showtimesSection);
         bookingColumn.appendChild(seatsSection);
     } else {
         bookingColumn.innerHTML = `
-            <div class="login-prompt" style="margin-top: 30px; padding: 20px; background-color: #f8f9fa; border-radius: 8px; text-align: center;">
-                <h3 style="margin-bottom: 15px;">Want to book tickets?</h3>
-                <p style="margin-bottom: 20px;">Please log in to book seats for this screening.</p>
-                <button id="login-button" class="navbar-button" style="padding: 10px 20px; font-size: 16px;">Login</button>
+            <div class="login-prompt">
+                <h3>Want to book tickets?</h3>
+                <p>Please log in to book seats for this screening.</p>
+                <button id="login-button" class="navbar-button login-button">Login</button>
             </div>
         `;
     }
@@ -146,28 +166,74 @@ function createInfoColumn(title, director, description, actors) {
     return infoColumn;
 }
 
-function createShowtimesSection(showtimes, filmIndex) {
-    const showtimesSection = document.createElement('div');
-    showtimesSection.classList.add('showtime-area');
-    showtimesSection.innerHTML = `
-        <h2>Available Showtimes:</h2>
-        <div class="showtime-buttons">
-            ${showtimes.map(time => `<button class="showtime-btn" data-time="${time}">${time}</button>`).join('')}
+function createDaysSection(schedule, filmIndex) {
+    const daysSection = document.createElement('div');
+    daysSection.classList.add('days-area');
+    daysSection.innerHTML = `
+        <h2>Select Day:</h2>
+        <div class="day-buttons">
+            ${Object.keys(schedule).map(day => `<button class="day-btn" data-day="${day}">${day}</button>`).join('')}
         </div>
     `;
 
-    showtimesSection.querySelectorAll('.showtime-btn').forEach(button => {
+    daysSection.querySelectorAll('.day-btn').forEach(button => {
         button.addEventListener('click', async (e) => {
-            document.querySelectorAll('.showtime-btn').forEach(btn => btn.classList.remove('selected'));
+            document.querySelectorAll('.day-btn').forEach(btn => btn.classList.remove('selected'));
+            document.querySelector('.showtime-area').innerHTML = '<h2>Select Showtime:</h2>';
+            document.querySelector('.seat-table').innerHTML = '';
             e.target.classList.add('selected');
-
-            const selectedTime = e.target.dataset.time;
-            const occupiedSeats = await getOccupiedSeats(filmIndex, selectedTime);
-            updateSeatsTable(occupiedSeats);
+            const selectedDay = e.target.dataset.day;
+            updateShowtimeButtons(schedule[selectedDay], filmIndex, selectedDay);
         });
     });
 
+    return daysSection;
+}
+
+function createShowtimesSection() {
+    const showtimesSection = document.createElement('div');
+    showtimesSection.classList.add('showtime-area');
+    showtimesSection.innerHTML = `<h2>Select Showtime:</h2>`;
     return showtimesSection;
+}
+
+function updateShowtimeButtons(showtimes, filmIndex, selectedDay) {
+    const showtimesArray = Array.isArray(showtimes) ? showtimes : [];
+    const showtimesSection = document.querySelector('.showtime-area');
+    const buttonContainer = document.createElement('div');
+    buttonContainer.classList.add('showtime-buttons');
+    
+    if (!showtimesArray || showtimesArray.length === 0) {
+        const noShowtimesMsg = document.createElement('p');
+        noShowtimesMsg.textContent = 'No showtimes available for this day.';
+        noShowtimesMsg.classList.add('no-showtimes-message');
+        buttonContainer.appendChild(noShowtimesMsg);
+    } else {
+        showtimesArray.forEach(time => {
+            const button = document.createElement('button');
+            button.classList.add('showtime-btn');
+            button.dataset.time = time;
+            button.textContent = time;
+
+            button.addEventListener('click', async (e) => {
+                document.querySelectorAll('.showtime-btn').forEach(btn => btn.classList.remove('selected'));
+                e.target.classList.add('selected');
+                const selectedTime = e.target.dataset.time;
+                const occupiedSeats = await getOccupiedSeats(filmIndex, selectedDay, selectedTime);
+                updateSeatsTable(occupiedSeats);
+            });
+
+            buttonContainer.appendChild(button);
+        });
+    }
+    
+    const existingButtonContainer = showtimesSection.querySelector('.showtime-buttons');
+
+    if (existingButtonContainer) {
+        existingButtonContainer.remove();
+    }
+    
+    showtimesSection.appendChild(buttonContainer);
 }
 
 function createSeatsSection() {
@@ -193,27 +259,50 @@ function createSeatsSection() {
     return seatsSection;
 }
 
+function generateTheaterLayout() {
+    const rows = ['A', 'B', 'C', 'D', 'E'];
+    const seatsPerRow = 5;
+    const seats = [];
+
+    for (const row of rows) {
+        for (let i = 1; i <= seatsPerRow; i++) {
+            seats.push(`${row}${i}`);
+        }
+    }
+    
+    return seats;
+}
+
 function updateSeatsTable(occupiedSeats) {
     const table = document.querySelector('.seat-table');
     table.innerHTML = '';
+    const rows = ['A', 'B', 'C', 'D', 'E'];
+    const seatsPerRow = 5;
+    const screenRow = document.createElement('tr');
+    const screenCell = document.createElement('td');
+    screenCell.colSpan = seatsPerRow;
+    screenCell.className = 'screen';
+    screenCell.textContent = 'SCREEN';
+    screenRow.appendChild(screenCell);
+    table.appendChild(screenRow);
+    const spacerRow = document.createElement('tr');
+    const spacerCell = document.createElement('td');
+    spacerCell.colSpan = seatsPerRow;
+    spacerCell.className = 'seat-table-spacer';
+    spacerRow.appendChild(spacerCell);
+    table.appendChild(spacerRow);
 
-    const seats = [
-        "A1", "A2", "A3", "A4", "A5",
-        "B1", "B2", "B3", "B4", "B5",
-        "C1", "C2", "C3", "C4", "C5",
-        "D1", "D2", "D3", "D4", "D5",
-        "E1", "E2", "E3", "E4", "E5"
-    ];
-
-    for (let i = 0; i < seats.length; i += 5) {
+    for (let i = 0; i < rows.length; i++) {
         const row = document.createElement('tr');
-        for (let j = i; j < i + 5; j++) {
+
+        for (let j = 1; j <= seatsPerRow; j++) {
+            const seatId = `${rows[i]}${j}`;
             const cell = document.createElement('td');
             const seatButton = document.createElement('button');
-            seatButton.textContent = seats[j];
+            seatButton.textContent = seatId;
             seatButton.classList.add('seat');
 
-            if (occupiedSeats.includes(seats[j])) {
+            if (occupiedSeats.includes(seatId)) {
                 seatButton.disabled = true;
                 seatButton.classList.add('occupied');
             } else {
@@ -225,15 +314,22 @@ function updateSeatsTable(occupiedSeats) {
             cell.appendChild(seatButton);
             row.appendChild(cell);
         }
+        
         table.appendChild(row);
     }
 }
 
 function handleReservation() {
+    const selectedDay = document.querySelector('.day-btn.selected')?.dataset.day;
     const selectedTime = document.querySelector('.showtime-btn.selected')?.dataset.time;
 
+    if (!selectedDay) {
+        alert('Please select a day first.');
+        return;
+    }
+
     if (!selectedTime) {
-        alert('Please select a showtime first.');
+        alert('Please select a showtime.');
         return;
     }
 
@@ -246,16 +342,17 @@ function handleReservation() {
 
     const filmIndex = new URLSearchParams(window.location.search).get('filmIndex');
 
-    makeReservation(filmIndex, selectedSeats, selectedTime);
+    makeReservation(filmIndex, selectedSeats, selectedDay, selectedTime);
 }
 
-async function getOccupiedSeats(filmIndex, showtime) {
+async function getOccupiedSeats(filmIndex, day, showtime) {
     const envelope = `<?xml version="1.0"?>
     <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
                       xmlns:ser="http://service.cinema.rsi/">
         <soapenv:Body>
             <ser:getOccupiedSeats>
                 <filmIndex>${filmIndex}</filmIndex>
+                <day>${day}</day>
                 <showtime>${showtime}</showtime>
             </ser:getOccupiedSeats>
         </soapenv:Body>
@@ -270,13 +367,14 @@ async function getOccupiedSeats(filmIndex, showtime) {
     }
 }
 
-async function makeReservation(filmIndex, selectedSeats, selectedTime) {
+async function makeReservation(filmIndex, selectedSeats, selectedDay, selectedTime) {
     const envelope = `<?xml version="1.0"?>
     <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
                       xmlns:ser="http://service.cinema.rsi/">
         <soapenv:Body>
             <ser:makeReservation>
                 <filmIndex>${filmIndex}</filmIndex>
+                <day>${selectedDay}</day>
                 <showtime>${selectedTime}</showtime>
                 ${selectedSeats.map(seat => `<seats>${seat}</seats>`).join('')}
             </ser:makeReservation>
@@ -289,7 +387,7 @@ async function makeReservation(filmIndex, selectedSeats, selectedTime) {
 
         if (response && response.includes('successful')) {
             alert('Reservation successful!');
-            const occupiedSeats = await getOccupiedSeats(filmIndex, selectedTime);
+            const occupiedSeats = await getOccupiedSeats(filmIndex, selectedDay, selectedTime);
             updateSeatsTable(occupiedSeats);
         } else {
             alert(`Reservation failed: ${response}`);

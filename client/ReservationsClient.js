@@ -77,6 +77,7 @@ function displayReservations(reservations) {
 
     reservations.forEach(reservation => {
         const filmTitle = reservation.getElementsByTagName('filmTitle')[0].textContent;
+        const day = reservation.getElementsByTagName('day')[0].textContent;
         const showtime = reservation.getElementsByTagName('showtime')[0].textContent;
         const seats = Array.from(reservation.getElementsByTagName('seat')).map(seat => seat.textContent);
 
@@ -84,6 +85,7 @@ function displayReservations(reservations) {
         reservationDiv.classList.add('reservation-item');
         reservationDiv.innerHTML = `
             <h2>${filmTitle}</h2>
+            <p><strong>Day:</strong> ${day}</p>
             <p><strong>Showtime:</strong> ${showtime}</p>
             <p><strong>Seats:</strong> ${seats.join(', ')}</p>
             <button class="generate-pdf-btn">Generate PDF</button>
@@ -91,11 +93,13 @@ function displayReservations(reservations) {
         `;
 
         reservationDiv.querySelector('.generate-pdf-btn').addEventListener('click', () => {
-            generatePDF(filmTitle, showtime, seats);
+            generatePDF(filmTitle, day, showtime, seats);
         });
 
         reservationDiv.querySelector('.cancel-reservation-btn').addEventListener('click', () => {
-            cancelReservation(filmTitle, showtime, seats);
+            if (confirm('Are you sure you want to cancel this reservation?')) {
+                cancelReservation(filmTitle, day, showtime, seats);
+            }
         });
 
         container.appendChild(reservationDiv);
@@ -107,21 +111,23 @@ function filterReservations() {
 
     const filteredReservations = allReservations.filter(reservation => {
         const filmTitle = reservation.getElementsByTagName('filmTitle')[0].textContent.toLowerCase();
+        const day = reservation.getElementsByTagName('day')[0].textContent.toLowerCase();
         const showtime = reservation.getElementsByTagName('showtime')[0].textContent.toLowerCase();
 
-        return filmTitle.includes(filterText) || showtime.includes(filterText);
+        return filmTitle.includes(filterText) || day.includes(filterText) || showtime.includes(filterText);
     });
 
     displayReservations(filteredReservations);
 }
 
-async function cancelReservation(filmTitle, showtime, seats) {
+async function cancelReservation(filmTitle, day, showtime, seats) {
     const envelope = `<?xml version="1.0"?>
     <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
                       xmlns:ser="http://service.cinema.rsi/">
         <soapenv:Body>
             <ser:cancelReservation>
                 <filmTitle>${filmTitle}</filmTitle>
+                <day>${day}</day>
                 <showtime>${showtime}</showtime>
                 ${seats.map(seat => `<seats>${seat}</seats>`).join('')}
             </ser:cancelReservation>
@@ -144,13 +150,14 @@ async function cancelReservation(filmTitle, showtime, seats) {
     }
 }
 
-async function generatePDF(filmTitle, showtime, seats) {
+async function generatePDF(filmTitle, day, showtime, seats) {
     const envelope = `<?xml version="1.0"?>
     <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
                       xmlns:ser="http://service.cinema.rsi/">
         <soapenv:Body>
             <ser:generatePDF>
                 <filmTitle>${filmTitle}</filmTitle>
+                <day>${day}</day>
                 <showtime>${showtime}</showtime>
                 ${seats.map(seat => `<seats>${seat}</seats>`).join('')}
             </ser:generatePDF>
@@ -164,7 +171,7 @@ async function generatePDF(filmTitle, showtime, seats) {
         alert('An error occurred while generating the PDF.');
     }
 }
- 
+
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('filter-button').addEventListener('click', filterReservations);
 

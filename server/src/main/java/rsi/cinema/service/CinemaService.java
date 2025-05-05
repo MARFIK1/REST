@@ -21,10 +21,10 @@ public interface CinemaService {
     DataHandler downloadImage(@WebParam(name = "imageName") String imageName);
 
     @WebMethod
-    String makeReservation(@WebParam(name = "filmIndex") int filmIndex, @WebParam(name = "showtime") String showtime, @WebParam(name = "seats") List<String> seats);
+    String makeReservation(@WebParam(name = "filmIndex") int filmIndex, @WebParam(name = "day") String day, @WebParam(name = "showtime") String showtime, @WebParam(name = "seats") List<String> seats);
 
     @WebMethod
-    String cancelReservation(@WebParam(name = "filmTitle") String filmTitle, @WebParam(name = "showtime") String showtime, @WebParam(name = "seats") List<String> seats);
+    String cancelReservation(@WebParam(name = "filmTitle") String filmTitle, @WebParam(name = "day") String day, @WebParam(name = "showtime") String showtime, @WebParam(name = "seats") List<String> seats);
 
     @WebMethod
     String registerUser(@WebParam(name = "username") String username, @WebParam(name = "password") String password);
@@ -36,8 +36,8 @@ public interface CinemaService {
     List<Reservation> getUserReservations(@WebParam(name = "authToken") String authToken);
 
     @WebMethod
-    List<String> getOccupiedSeats(@WebParam(name = "filmIndex") int filmIndex, @WebParam(name = "showtime") String showtime);
+    List<String> getOccupiedSeats(@WebParam(name = "filmIndex") int filmIndex, @WebParam(name = "day") String day, @WebParam(name = "showtime") String showtime);
 
     @WebMethod
-    void generatePDF(@WebParam(name = "filmTitle") String filmTitle, @WebParam(name = "showtime") String showtime, @WebParam(name = "seats") List<String> seats);
+    void generatePDF(@WebParam(name = "filmTitle") String filmTitle, @WebParam(name = "day") String day, @WebParam(name = "showtime") String showtime, @WebParam(name = "seats") List<String> seats);
 }

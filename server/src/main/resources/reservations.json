@@ -1,6 +1,7 @@
 [ {
   "username" : "kacper",
   "filmTitle" : "Minecraft: Film",
+  "day" : "Tuesday",
   "showtime" : "15:00",
   "seats" : [ "A2", "A3", "A4" ]
 } ]

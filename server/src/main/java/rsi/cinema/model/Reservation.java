@@ -8,19 +8,21 @@ import jakarta.xml.bind.annotation.XmlType;
 import java.util.List;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "Reservation", propOrder = {"username", "filmTitle", "showtime", "seats"})
+@XmlType(name = "Reservation", propOrder = {"username", "filmTitle", "day", "showtime", "seats"})
 public class Reservation {
     private String username;
     private String filmTitle;
+    private String day;
     private String showtime;
     @XmlElement(name = "seat")
     private List<String> seats;
 
     public Reservation() {}
 
-    public Reservation(String username, String filmTitle, String showtime, List<String> seats) {
+    public Reservation(String username, String filmTitle, String day, String showtime, List<String> seats) {
         this.username = username;
         this.filmTitle = filmTitle;
+        this.day = day;
         this.showtime = showtime;
         this.seats = seats;
     }
@@ -39,6 +41,14 @@ public class Reservation {
 
     public void setFilmTitle(String filmTitle) {
         this.filmTitle = filmTitle;
+    }
+    
+    public String getDay() {
+        return day;
+    }
+
+    public void setDay(String day) {
+        this.day = day;
     }
 
     public String getShowtime() {
