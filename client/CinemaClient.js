@@ -76,8 +76,6 @@ async function loadFilms() {
             });
         });
 
-        document.getElementById('load').textContent = 'Hide films';
-        document.getElementById('load').dataset.state = 'shown';        
         document.getElementById('films').style.display = 'grid';
         return true;
     } catch (error) {
@@ -92,33 +90,8 @@ async function loadFilms() {
     }
 }
 
-function toggleFilms() {
-    const loadButton = document.getElementById('load');
-    const filmsContainer = document.getElementById('films');
-    
-    if (loadButton.dataset.state === 'shown') {
-        filmsContainer.style.display = 'none';
-        loadButton.textContent = 'Show films';
-        loadButton.dataset.state = 'hidden';
-    }
-    else {
-        filmsContainer.style.display = 'grid';
-        loadButton.textContent = 'Hide films';
-        loadButton.dataset.state = 'shown';
-
-        if (filmsContainer.children.length === 0) {
-            loadFilms();
-        }
-    }
-}
-
-document.getElementById('load').addEventListener('click', toggleFilms);
-
 document.addEventListener('DOMContentLoaded', () => {
     const filmsContainer = document.getElementById('films');
     filmsContainer.style.display = 'grid';
-    const loadButton = document.getElementById('load');
-    loadButton.textContent = 'Hide films';
-    loadButton.dataset.state = 'shown';
     loadFilms();
 });

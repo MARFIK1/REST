@@ -41,6 +41,8 @@ async function callSoap(body) {
 }
 
 let allReservations = [];
+let uniqueDays = [];
+let uniqueShowtimes = [];
 
 async function loadReservations() {
     const envelope = `<?xml version="1.0"?>
@@ -55,8 +57,10 @@ async function loadReservations() {
 
     try {
         const xml = await callSoap(envelope);
-        allReservations = Array.from(xml.getElementsByTagName('return')); // Zapisz wszystkie rezerwacje
+        allReservations = Array.from(xml.getElementsByTagName('return'));
 
+        extractUniqueValues();
+        updateFilterPanel();
         displayReservations(allReservations);
     } catch (error) {
         console.error('Error loading reservations:', error);
@@ -106,15 +110,56 @@ function displayReservations(reservations) {
     });
 }
 
+function extractUniqueValues() {
+    const daysSet = new Set();
+    const showtimesSet = new Set();
+
+    allReservations.forEach(reservation => {
+        const day = reservation.getElementsByTagName('day')[0].textContent;
+        const showtime = reservation.getElementsByTagName('showtime')[0].textContent;
+
+        daysSet.add(day);
+        showtimesSet.add(showtime);
+    });
+
+    uniqueDays = [...daysSet].sort();
+    uniqueShowtimes = [...showtimesSet].sort();
+}
+
+function updateFilterPanel() {
+    const daySelect = document.getElementById('day-select');
+    const showtimeSelect = document.getElementById('showtime-select');
+
+    uniqueDays.forEach(day => {
+        const option = document.createElement('option');
+        option.value = day;
+        option.textContent = day;
+        daySelect.appendChild(option);
+    });
+
+    uniqueShowtimes.forEach(showtime => {
+        const option = document.createElement('option');
+        option.value = showtime;
+        option.textContent = showtime;
+        showtimeSelect.appendChild(option);
+    });
+}
+
 function filterReservations() {
-    const filterText = document.getElementById('filter-input').value.toLowerCase();
+    const filmTitle = document.getElementById('film-filter').value.toLowerCase();
+    const selectedDay = document.getElementById('day-select').value;
+    const selectedShowtime = document.getElementById('showtime-select').value;
 
     const filteredReservations = allReservations.filter(reservation => {
-        const filmTitle = reservation.getElementsByTagName('filmTitle')[0].textContent.toLowerCase();
-        const day = reservation.getElementsByTagName('day')[0].textContent.toLowerCase();
-        const showtime = reservation.getElementsByTagName('showtime')[0].textContent.toLowerCase();
-
-        return filmTitle.includes(filterText) || day.includes(filterText) || showtime.includes(filterText);
+        const title = reservation.getElementsByTagName('filmTitle')[0].textContent.toLowerCase();
+        const day = reservation.getElementsByTagName('day')[0].textContent;
+        const showtime = reservation.getElementsByTagName('showtime')[0].textContent;
+        
+        const matchesTitle = title.includes(filmTitle);
+        const matchesDay = selectedDay === '' || day === selectedDay;
+        const matchesShowtime = selectedShowtime === '' || showtime === selectedShowtime;
+        
+        return matchesTitle && matchesDay && matchesShowtime;
     });
 
     displayReservations(filteredReservations);
@@ -173,7 +218,16 @@ async function generatePDF(filmTitle, day, showtime, seats) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('filter-button').addEventListener('click', filterReservations);
+    document.getElementById('reset-filter-btn').addEventListener('click', () => {
+        document.getElementById('film-filter').value = '';
+        document.getElementById('day-select').value = '';
+        document.getElementById('showtime-select').value = '';
+        displayReservations(allReservations);
+    });
+
+    document.getElementById('film-filter').addEventListener('input', filterReservations);
+    document.getElementById('day-select').addEventListener('change', filterReservations);
+    document.getElementById('showtime-select').addEventListener('change', filterReservations);
 
     loadReservations();
 });

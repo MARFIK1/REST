@@ -6,12 +6,33 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="filter-container">
-        <input type="text" id="filter-input" placeholder="Search by film title or showtime">
-        <button id="filter-button">Filter</button>
-    </div>
-    <div id="reservations-container" class="reservations-container">
-        <p>Loading your reservations...</p>
+    <div class="page-layout">
+        <div class="filter-panel">
+            <h3>Filter Reservations</h3>
+            <div class="filter-form">
+                <div class="filter-group">
+                    <label for="film-filter">Film Title:</label>
+                    <input type="text" id="film-filter" placeholder="Enter film title...">
+                </div>
+
+                <div class="filter-group">
+                    <label for="day-select">Day:</label>
+                    <select id="day-select">
+                        <option value="">All days</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="showtime-select">Showtime:</label>
+                    <select id="showtime-select">
+                        <option value="">All showtimes</option>
+                    </select>
+                </div>
+
+                <button id="reset-filter-btn" class="filter-button">Reset Filters</button>
+            </div>
+        </div>
+        <div id="reservations-container" class="reservations-container"></div>
     </div>
     <script src="navbar.js"></script>
     <script src="ReservationsClient.js"></script>
