@@ -32,6 +32,15 @@ h1, .film-title-large {
     color: black;
 }
 
+.error-message {
+    color: red;
+    text-align: center;
+    padding: 20px;
+    margin: 20px 0;
+    border-radius: 6px;
+    background-color: rgba(255, 0, 0, 0.05);
+}
+
 /* =====================
     NAVBAR
    ===================== */
@@ -95,6 +104,28 @@ h1, .film-title-large {
 
 .back-button:hover, #load:hover {
     background: mediumblue;
+}
+
+.back-button-container {
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+}
+
+.back-button-container .back-button {
+    background-color: slategray;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 8px 16px;
+    font-size: 14px;
+    transition: background-color 0.3s;
+    width: auto;
+}
+
+.back-button-container .back-button:hover {
+    background-color: darkslategray;
 }
 
 /* =====================
@@ -418,34 +449,9 @@ h1, .film-title-large {
     background-color: mediumblue;
 }
 
-.error-message {
-    color: red;
-    text-align: center;
-    padding: 20px;
-    margin: 20px 0;
-    border-radius: 6px;
-    background-color: rgba(255, 0, 0, 0.05);
-}
-
 /* =====================
-    AUTHENTICATION STYLES
+    FORM ELEMENTS
    ===================== */
-.auth-container {
-    max-width: 380px;
-    margin: 60px auto;
-    padding: 25px 30px;
-    background-color: white;
-    border-radius: 10px;
-    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-}
-
-.auth-container h1 {
-    font-size: 2em;
-    margin-bottom: 25px;
-    text-align: center;
-    color: darkslategray;
-}
-
 .form-group {
     margin-bottom: 20px;
 }
@@ -472,6 +478,69 @@ h1, .film-title-large {
     outline: none;
     border-color: royalblue;
     box-shadow: 0 0 0 3px rgba(65, 105, 225, 0.2);
+}
+
+.filter-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.filter-group label {
+    font-weight: bold;
+    color: dimgray;
+}
+
+.filter-group input,
+.filter-group select {
+    padding: 8px;
+    border: 1px solid lightgray;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.filter-button {
+    padding: 8px 16px;
+    background-color: royalblue;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 5px;
+}
+
+#reset-filter-btn {
+    background-color: slategray;
+}
+
+#reset-filter-btn:hover {
+    background-color: darkslategray;
+}
+
+/* =====================
+    AUTHENTICATION STYLES
+   ===================== */
+.auth-container {
+    max-width: 380px;
+    margin: 60px auto;
+    padding: 25px 30px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+.auth-container h1 {
+    font-size: 2em;
+    margin-bottom: 25px;
+    text-align: center;
+    color: darkslategray;
 }
 
 .auth-buttons {
@@ -511,28 +580,6 @@ h1, .film-title-large {
     box-shadow: 0 3px 6px rgba(65, 105, 225, 0.3);
 }
 
-.back-button-container {
-    margin-top: 15px;
-    display: flex;
-    justify-content: center;
-}
-
-.back-button-container .back-button {
-    background-color: slategray;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    padding: 8px 16px;
-    font-size: 14px;
-    transition: background-color 0.3s;
-    width: auto;
-}
-
-.back-button-container .back-button:hover {
-    background-color: darkslategray;
-}
-
 .message {
     margin-top: 20px;
     padding: 12px;
@@ -545,10 +592,32 @@ h1, .film-title-large {
 /* =====================
     RESERVATIONS PAGE
    ===================== */
+.page-layout {
+    display: flex;
+    gap: 20px;
+    margin: 20px;
+}
+
+.filter-panel {
+    flex: 0 0 250px;
+    padding: 15px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+    align-self: flex-start;
+}
+
+.filter-panel h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: darkslategray;
+}
+
 .reservations-container {
+    flex: 1;
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 0.8em;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
     padding: 15px;
     background-color: white;
     border-radius: 8px;
@@ -579,7 +648,14 @@ h1, .film-title-large {
     color: dimgray;
 }
 
-.cancel-reservation-btn, .generate-pdf-btn {
+.reservation-buttons-container {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.cancel-reservation-btn, .generate-pdf-btn, .edit-reservation-btn {
     align-self: flex-start;
     font-size: 14px;
     color: white;
@@ -587,10 +663,10 @@ h1, .film-title-large {
     border-radius: 6px;
     cursor: pointer;
     transition: background-color 0.3s;
+    padding: 8px 16px;
 }
 
 .cancel-reservation-btn {
-    padding: 8px 16px;
     background-color: red;
 }
 
@@ -599,12 +675,150 @@ h1, .film-title-large {
 }
 
 .generate-pdf-btn {
-    padding: 10px 20px;
     background-color: forestgreen;
 }
 
 .generate-pdf-btn:hover {
     background-color: darkgreen;
+}
+
+.edit-reservation-btn {
+    background-color: royalblue;
+}
+
+.edit-reservation-btn:hover {
+    background-color: mediumblue;
+}
+
+/* =====================
+    EDIT RESERVATION MODAL
+   ===================== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.edit-modal {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    width: 90%;
+    max-width: 450px;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.edit-modal h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: darkslategray;
+}
+
+.edit-modal h3 {
+    margin-top: 25px;
+    margin-bottom: 10px;
+    color: darkslategray;
+}
+
+.edit-seats {
+    margin-top: 20px;
+}
+
+.edit-seats h3 {
+    text-align: center;
+}
+
+.edit-modal-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.edit-modal-content .form-group {
+    width: 100%;
+    text-align: left;
+}
+
+.edit-modal-content .showtime-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 0.7em;
+    flex-wrap: wrap;
+    margin: 15px 0 25px 0;
+}
+
+.edit-modal-content label {
+    text-align: center;
+    display: block;
+}
+
+.showtime-selector-container {
+    text-align: left;
+    width: 100%;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.save-button {
+    background-color: green;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.save-button:hover {
+    background-color: darkgreen;
+}
+
+/* =====================
+    CONFIRMATION MODAL
+   ===================== */
+.confirmation-modal {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    width: 90%;
+    max-width: 400px;
+    position: relative;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+.confirmation-modal h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: darkslategray;
+}
+
+.confirmation-content {
+    text-align: left;
+    margin: 15px 0;
+}
+
+.confirmation-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
 }
 
 /* =====================
@@ -712,76 +926,4 @@ h1, .film-title-large {
         padding: 0.3em 0.8em;
         font-size: 0.8rem;
     }
-}
-
-.page-layout {
-    display: flex;
-    gap: 20px;
-    margin: 20px;
-}
-
-.filter-panel {
-    flex: 0 0 250px;
-    padding: 15px;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-    align-self: flex-start;
-}
-
-.filter-panel h3 {
-    margin-top: 0;
-    margin-bottom: 15px;
-    color: darkslategray;
-}
-
-.filter-form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.filter-group {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.filter-group label {
-    font-weight: bold;
-    color: dimgray;
-}
-
-.filter-group input,
-.filter-group select {
-    padding: 8px;
-    border: 1px solid lightgray;
-    border-radius: 4px;
-    font-size: 14px;
-}
-
-.filter-button {
-    padding: 8px 16px;
-    background-color: royalblue;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    margin-top: 5px;
-}
-
-#reset-filter-btn {
-    background-color: slategray;
-}
-
-#reset-filter-btn:hover {
-    background-color: darkslategray;
-}
-
-.reservations-container {
-    flex: 1;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
 }

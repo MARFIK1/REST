@@ -1,7 +1,19 @@
 [ {
   "username" : "kacper",
+  "filmTitle" : "Grzesznicy",
+  "day" : "Monday",
+  "showtime" : "20:00",
+  "seats" : [ "A3", "E2" ]
+}, {
+  "username" : "kacper",
   "filmTitle" : "Minecraft: Film",
   "day" : "Tuesday",
-  "showtime" : "15:00",
-  "seats" : [ "A2", "A3", "A4" ]
+  "showtime" : "20:00",
+  "seats" : [ "A3", "B2", "C2" ]
+}, {
+  "username" : "kacper2",
+  "filmTitle" : "Minecraft: Film",
+  "day" : "Tuesday",
+  "showtime" : "20:00",
+  "seats" : [ "A5", "B4", "C3" ]
 } ]
