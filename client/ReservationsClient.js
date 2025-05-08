@@ -23,7 +23,7 @@ async function callSoap(body) {
     const serializer = new XMLSerializer();
     const modifiedBody = serializer.serializeToString(xmlDoc);
 
-    const resp = await fetch('http://localhost:9999/cinema', {
+    const resp = await fetch('https://localhost:9999/cinema', {
         method: 'POST',
         headers: {
             'Content-Type': 'text/xml; charset=utf-8',

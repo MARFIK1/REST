@@ -76,7 +76,7 @@ function displayMessage(message, isError = false) {
 
 async function callSoap(body) {
     try {
-        const resp = await fetch('http://localhost:9999/cinema', {
+        const resp = await fetch('https://localhost:9999/cinema', {
             method: 'POST',
             headers: {
                 'Content-Type': 'text/xml; charset=utf-8',

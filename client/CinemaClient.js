@@ -1,6 +1,6 @@
 async function callSoap(body) {
     try {
-        const resp = await fetch('http://localhost:9999/cinema', {
+        const resp = await fetch('https://localhost:9999/cinema', {
             method: 'POST',
             headers: {
                 'Content-Type': 'text/xml; charset=utf-8',
@@ -57,7 +57,7 @@ async function loadFilms() {
             const imageName = node.getElementsByTagName('imageName')[0].textContent;
             const li = document.createElement('li');
             li.classList.add('film-item');
-            const imageUrl = `http://localhost:9999/cinema/images/${imageName}`;
+            const imageUrl = `https://localhost:9999/cinema/images/${imageName}`;
             
             li.innerHTML =
                 `<div class="film-content">

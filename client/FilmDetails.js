@@ -20,7 +20,7 @@ async function callSoap(body) {
         modifiedBody = serializer.serializeToString(xmlDoc);
     }
     
-    const resp = await fetch('http://localhost:9999/cinema', {
+    const resp = await fetch('https://localhost:9999/cinema', {
         method: 'POST',
         headers: {
             'Content-Type': 'text/xml; charset=utf-8',
@@ -146,7 +146,7 @@ function createPosterColumn(imageName, title) {
     const posterColumn = document.createElement('div');
     posterColumn.classList.add('poster-column');
     posterColumn.innerHTML = `
-        <img class="film-poster-large" src="http://localhost:9999/cinema/images/${imageName}" alt="${title}">
+        <img class="film-poster-large" src="https://localhost:9999/cinema/images/${imageName}" alt="${title}">
     `;
     return posterColumn;
 }
