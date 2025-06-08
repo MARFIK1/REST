@@ -1,45 +1,53 @@
-async function callSoap(body) {
-    try {
-        const resp = await fetch('https://localhost:9999/cinema', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'text/xml; charset=utf-8',
-                'SOAPAction': '""'
-            },
-            body: body
-        });
+// async function callSoap(body) {
+//     try {
+//         const resp = await fetch('https://localhost:9999/cinema', {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'text/xml; charset=utf-8',
+//                 'SOAPAction': '""'
+//             },
+//             body: body
+//         });
         
-        if (!resp.ok) {
-            throw new Error(`HTTP error! status: ${resp.status}`);
-        }
+//         if (!resp.ok) {
+//             throw new Error(`HTTP error! status: ${resp.status}`);
+//         }
         
-        const text = await resp.text();
-        return new DOMParser().parseFromString(text, 'application/xml');
-    } catch (error) {
-        console.error('SOAP request failed:', error);
-        throw error;
-    }
-}
+//         const text = await resp.text();
+//         return new DOMParser().parseFromString(text, 'application/xml');
+//     } catch (error) {
+//         console.error('SOAP request failed:', error);
+//         throw error;
+//     }
+// }
 
 async function loadFilms() {
-    const envelope = `<?xml version="1.0"?>
-    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                      xmlns:ser="http://service.cinema.rsi/">
-        <soapenv:Body>
-            <ser:getFilmList/>
-        </soapenv:Body>
-    </soapenv:Envelope>`;
+    // const envelope = `<?xml version="1.0"?>
+    // <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+    //                   xmlns:ser="http://service.cinema.rsi/">
+    //     <soapenv:Body>
+    //         <ser:getFilmList/>
+    //     </soapenv:Body>
+    // </soapenv:Envelope>`;
     
     try {
-        const xml = await callSoap(envelope);
-        const fault = xml.getElementsByTagName('Fault')[0];
+        // const xml = await callSoap(envelope);
+        // const fault = xml.getElementsByTagName('Fault')[0];
 
-        if (fault) {
-            const faultString = fault.getElementsByTagName('faultstring')[0]?.textContent;
-            throw new Error(`SOAP Fault: ${faultString}`);
-        }
+        // if (fault) {
+        //     const faultString = fault.getElementsByTagName('faultstring')[0]?.textContent;
+        //     throw new Error(`SOAP Fault: ${faultString}`);
+        // }
         
-        const items = Array.from(xml.getElementsByTagName('return'));
+        // const items = Array.from(xml.getElementsByTagName('return'));
+        const resp = await fetch('http://localhost:8080/cinema/films', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+        if (!resp.ok) throw new Error(`HTTP error! status: ${resp.status}`);
+        const items = await resp.json();
         
         if (!items || items.length === 0) {
             document.getElementById('films').innerHTML = 
@@ -51,13 +59,13 @@ async function loadFilms() {
         ul.innerHTML = '';
         
         items.forEach((node, index) => {
-            const t = node.getElementsByTagName('title')[0].textContent;
-            const d = node.getElementsByTagName('director')[0].textContent;
-            const desc = node.getElementsByTagName('description')[0].textContent;
-            const imageName = node.getElementsByTagName('imageName')[0].textContent;
+            const t = node.title;
+            const d = node.director;
+            const desc = node.description;
+            const imageName = node.imageName;
             const li = document.createElement('li');
             li.classList.add('film-item');
-            const imageUrl = `https://localhost:9999/cinema/images/${imageName}`;
+            const imageUrl = `http://localhost:8080/cinema/images/${imageName}`;
             
             li.innerHTML =
                 `<div class="film-content">

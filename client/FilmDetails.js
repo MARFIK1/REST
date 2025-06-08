@@ -44,18 +44,30 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.location.href = 'cinema.html';
     });
 
-    const envelope = `<?xml version="1.0"?>
-    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                      xmlns:ser="http://service.cinema.rsi/">
-        <soapenv:Body>
-            <ser:getFilmList/>
-        </soapenv:Body>
-    </soapenv:Envelope>`;
+    // const envelope = `<?xml version="1.0"?>
+    // <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+    //                   xmlns:ser="http://service.cinema.rsi/">
+    //     <soapenv:Body>
+    //         <ser:getFilmList/>
+    //     </soapenv:Body>
+    // </soapenv:Envelope>`;
 
     try {
-        const xml = await callSoap(envelope);
-        const films = Array.from(xml.getElementsByTagName('return'));
-        const film = films[filmIndex];
+        // const xml = await callSoap(envelope);
+        // const films = Array.from(xml.getElementsByTagName('return'));
+        // const film = films[filmIndex];
+        const film = await fetch(`http://localhost:8080/cinema/films/${filmIndex}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                // 'Authorization': authToken ? `Bearer ${authToken}` : ''
+            }
+        })        .then(resp => {
+            if (!resp.ok) {
+                throw new Error(`HTTP error! status: ${resp.status}`);
+            }
+            return resp.json();
+        });
 
         if (film) {
             displayFilmDetails(film, filmIndex, authToken);
@@ -74,22 +86,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function displayFilmDetails(film, filmIndex, authToken) {
-    const title = film.getElementsByTagName('title')[0].textContent;
-    const director = film.getElementsByTagName('director')[0].textContent;
-    const description = film.getElementsByTagName('description')[0].textContent;
-    const actors = Array.from(film.getElementsByTagName('actor')).map(el => el.textContent);
-    const imageName = film.getElementsByTagName('imageName')[0].textContent;
-    const scheduleEntries = Array.from(film.getElementsByTagName('entry'));
+    const title = film.title;
+    const director = film.director;
+    const description = film.description;
+    const actors = Array.from(film.actors);
+    const imageName = film.imageName;
+    const scheduleEntries = Object.entries(film.schedule);
     const schedule = {};
     
     scheduleEntries.forEach(entry => {
-        const day = entry.getElementsByTagName('key')[0].textContent;
-        const valueElements = entry.getElementsByTagName('value');
+        const day = entry[0];
+        const valueElements = entry[1];
         let showtimes = [];
 
         if (valueElements && valueElements.length > 0) {
             for (let i = 0; i < valueElements.length; i++) {
-                const valueText = valueElements[i].textContent.trim();
+                const valueText = valueElements[i].trim();
                 if (valueText) {
                     showtimes.push(valueText);
                 }
@@ -146,7 +158,7 @@ function createPosterColumn(imageName, title) {
     const posterColumn = document.createElement('div');
     posterColumn.classList.add('poster-column');
     posterColumn.innerHTML = `
-        <img class="film-poster-large" src="https://localhost:9999/cinema/images/${imageName}" alt="${title}">
+        <img class="film-poster-large" src="http://localhost:8080/cinema/images/${imageName}" alt="${title}">
     `;
     return posterColumn;
 }
@@ -346,21 +358,32 @@ function handleReservation() {
 }
 
 async function getOccupiedSeats(filmIndex, day, showtime) {
-    const envelope = `<?xml version="1.0"?>
-    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                      xmlns:ser="http://service.cinema.rsi/">
-        <soapenv:Body>
-            <ser:getOccupiedSeats>
-                <filmIndex>${filmIndex}</filmIndex>
-                <day>${day}</day>
-                <showtime>${showtime}</showtime>
-            </ser:getOccupiedSeats>
-        </soapenv:Body>
-    </soapenv:Envelope>`;
+    // const envelope = `<?xml version="1.0"?>
+    // <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+    //                   xmlns:ser="http://service.cinema.rsi/">
+    //     <soapenv:Body>
+    //         <ser:getOccupiedSeats>
+    //             <filmIndex>${filmIndex}</filmIndex>
+    //             <day>${day}</day>
+    //             <showtime>${showtime}</showtime>
+    //         </ser:getOccupiedSeats>
+    //     </soapenv:Body>
+    // </soapenv:Envelope>`;
 
     try {
-        const xml = await callSoap(envelope);
-        return Array.from(xml.getElementsByTagName('return')).map(seat => seat.textContent);
+        // const xml = await callSoap(envelope);
+        // return Array.from(xml.getElementsByTagName('return')).map(seat => seat.textContent);
+        const resp = await fetch(`http://localhost:8080/cinema/occupied-seats?filmIndex=${filmIndex}&day=${day}&showtime=${showtime}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `${sessionStorage.getItem('authToken')}`
+            }
+        });
+        if (!resp.ok) {
+            throw new Error(`HTTP error! status: ${resp.status}`);
+        }
+        return resp.json();
     } catch (error) {
         console.error('Error fetching occupied seats:', error);
         return [];
@@ -368,29 +391,42 @@ async function getOccupiedSeats(filmIndex, day, showtime) {
 }
 
 async function makeReservation(filmIndex, selectedSeats, selectedDay, selectedTime) {
-    const envelope = `<?xml version="1.0"?>
-    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                      xmlns:ser="http://service.cinema.rsi/">
-        <soapenv:Body>
-            <ser:makeReservation>
-                <filmIndex>${filmIndex}</filmIndex>
-                <day>${selectedDay}</day>
-                <showtime>${selectedTime}</showtime>
-                ${selectedSeats.map(seat => `<seats>${seat}</seats>`).join('')}
-            </ser:makeReservation>
-        </soapenv:Body>
-    </soapenv:Envelope>`;
+    // const envelope = `<?xml version="1.0"?>
+    // <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+    //                   xmlns:ser="http://service.cinema.rsi/">
+    //     <soapenv:Body>
+    //         <ser:makeReservation>
+    //             <filmIndex>${filmIndex}</filmIndex>
+    //             <day>${selectedDay}</day>
+    //             <showtime>${selectedTime}</showtime>
+    //             ${selectedSeats.map(seat => `<seats>${seat}</seats>`).join('')}
+    //         </ser:makeReservation>
+    //     </soapenv:Body>
+    // </soapenv:Envelope>`;
 
     try {
-        const xml = await callSoap(envelope);
-        const response = xml.getElementsByTagName('return')[0]?.textContent;
+        // const xml = await callSoap(envelope);
+        // const response = xml.getElementsByTagName('return')[0]?.textContent;
+        const resp = await fetch(`http://localhost:8080/cinema/reservation`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `${sessionStorage.getItem('authToken')}`
+            },
+            body: JSON.stringify({
+                filmIndex: filmIndex,
+                day: selectedDay,
+                showtime: selectedTime,
+                seats: selectedSeats
+            })
+        });
 
-        if (response && response.includes('successful')) {
+        if (resp && resp.ok) {
             alert('Reservation successful!');
             const occupiedSeats = await getOccupiedSeats(filmIndex, selectedDay, selectedTime);
             updateSeatsTable(occupiedSeats);
         } else {
-            alert(`Reservation failed: ${response}`);
+            alert(`Reservation failed: ${resp}`);
         }
     } catch (error) {
         console.error('Error making reservation:', error);

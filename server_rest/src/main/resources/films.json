@@ -1,0 +1,50 @@
+[
+  {
+    "title": "Minecraft: Film",
+    "director": "Jared Hess",
+    "actors": ["Jason Momoa", "Jack Black", "Sebastian Hansen", "Emma Myers", "Danielle Brooks", "Jennifer Coolidge"],
+    "description": "Grupka ludzi trafia do gry komputerowej \"Minecraft\". Próbują oni wydostać się z tej kwadratowej krainy, a pomaga im kultowa postać - Steve.",
+    "imageName": "minecraft_film.jpg",
+    "schedule": {
+      "Monday": ["12:00", "18:00"],
+      "Tuesday": ["15:00", "20:00"],
+      "Wednesday": ["12:00", "15:00", "18:00"],
+      "Thursday": ["14:00", "18:00"],
+      "Friday": ["12:00", "15:00", "18:00", "21:00"],
+      "Saturday": ["10:00", "13:00", "16:00", "19:00", "22:00"],
+      "Sunday": ["11:00", "14:00", "17:00", "20:00"]
+    }
+  },
+  {
+    "title": "Grzesznicy",
+    "director": "Ryan Coogler",
+    "actors": ["Michael B. Jordan", "Hailee Steinfeld", "Jack O'Connell", "Wunmi Mosaku", "Jayme Lawson", "Omar Benson Miller"],
+    "description": "Chcąc zostawić za sobą burzliwą przeszłość, bracia bliźniacy wracają do rodzinnego miasta, żeby zacząć życie od nowa. Na miejscu przekonują się, że czeka na nich jeszcze gorsze zło.",
+    "imageName": "grzesznicy.jpg",
+    "schedule": {
+      "Monday": ["14:00", "20:00"],
+      "Tuesday": ["17:00"],
+      "Wednesday": [],
+      "Thursday": ["14:00", "17:00", "20:00"],
+      "Friday": ["14:00", "17:00", "20:00", "23:00"],
+      "Saturday": ["11:00", "14:00", "17:00", "20:00", "23:00"],
+      "Sunday": ["12:00", "15:00", "18:00", "21:00"]
+    }
+  },
+  {
+    "title": "Sonic 3: Szybki jak błyskawica",
+    "director": "Jeff Fowler",
+    "actors": ["Jim Carrey", "Ben Schwartz", "Keanue Reeves", "Idris Elba", "Colleen O'Shaughnessey", "James Marsden"],
+    "description": "Złowrogi Doktor Robotnik powraca z zamiarem kontynuowania projektu swojego dziadka a następnie zniszczenia świata. Drużyna Sonica zmuszona jest po raz kolejny stanąć do walki.",
+    "imageName": "sonic.jpg",
+    "schedule": {
+      "Monday": ["13:00", "16:00"],
+      "Tuesday": ["13:00", "16:00", "19:00"],
+      "Wednesday": ["13:00", "19:00"],
+      "Thursday": ["16:00"],
+      "Friday": ["13:00", "16:00", "19:00", "22:00"],
+      "Saturday": ["10:30", "13:30", "16:30", "19:30"],
+      "Sunday": ["12:30", "15:30", "18:30"]
+    }
+  }
+]
