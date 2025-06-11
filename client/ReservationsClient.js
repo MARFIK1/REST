@@ -1,63 +1,19 @@
-async function callSoap(body) {
-    const authToken = sessionStorage.getItem('authToken');
-    if (!authToken) {
-        alert('You must be logged in to view your reservations.');
-        window.location.href = 'login.html';
-        return;
-    }
-
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(body, 'text/xml');
-    const envelope = xmlDoc.documentElement;
-    let header = xmlDoc.getElementsByTagNameNS(envelope.namespaceURI, 'Header')[0];
-
-    if (!header) {
-        header = xmlDoc.createElementNS(envelope.namespaceURI, 'soapenv:Header');
-        envelope.insertBefore(header, envelope.firstChild);
-    }
-
-    const auth = xmlDoc.createElementNS('http://service.cinema.rsi/auth', 'auth:Authorization');
-    auth.textContent = authToken;
-    header.appendChild(auth);
-
-    const serializer = new XMLSerializer();
-    const modifiedBody = serializer.serializeToString(xmlDoc);
-
-    const resp = await fetch('https://localhost:9999/cinema', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'text/xml; charset=utf-8',
-            'SOAPAction': '""'
-        },
-        body: modifiedBody
-    });
-
-    if (!resp.ok) {
-        throw new Error(`HTTP error! status: ${resp.status}`);
-    }
-
-    const text = await resp.text();
-    return new DOMParser().parseFromString(text, 'application/xml');
-}
-
 let allReservations = [];
 let uniqueDays = [];
 let uniqueShowtimes = [];
 
 async function loadReservations() {
-    const envelope = `<?xml version="1.0"?>
-    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                      xmlns:ser="http://service.cinema.rsi/">
-        <soapenv:Body>
-            <ser:getUserReservations>
-                <authToken>${sessionStorage.getItem('authToken')}</authToken>
-            </ser:getUserReservations>
-        </soapenv:Body>
-    </soapenv:Envelope>`;
-
     try {
-        const xml = await callSoap(envelope);
-        allReservations = Array.from(xml.getElementsByTagName('return'));
+        const resp = await fetch('https://localhost:8443/cinema/reservations', {
+            method: 'GET',
+            headers: {
+                'Authorization': sessionStorage.getItem('basicAuth'),
+                'Content-Type': 'application/json'
+            }
+        });
+        if (!resp.ok) throw new Error(await resp.text());
+        const reservations = await resp.json();
+        allReservations = reservations;
 
         extractUniqueValues();
         updateFilterPanel();
@@ -80,10 +36,10 @@ function displayReservations(reservations) {
     }
 
     reservations.forEach(reservation => {
-        const filmTitle = reservation.getElementsByTagName('filmTitle')[0].textContent;
-        const day = reservation.getElementsByTagName('day')[0].textContent;
-        const showtime = reservation.getElementsByTagName('showtime')[0].textContent;
-        const seats = Array.from(reservation.getElementsByTagName('seat')).map(seat => seat.textContent);
+        const filmTitle = reservation.filmTitle;
+        const day = reservation.day;
+        const showtime = reservation.showtime;
+        const seats = Array.from(reservation.seats);
 
         const reservationDiv = document.createElement('div');
         reservationDiv.classList.add('reservation-item');
@@ -122,8 +78,8 @@ function extractUniqueValues() {
     const showtimesSet = new Set();
 
     allReservations.forEach(reservation => {
-        const day = reservation.getElementsByTagName('day')[0].textContent;
-        const showtime = reservation.getElementsByTagName('showtime')[0].textContent;
+        const day = reservation.day;
+        const showtime = reservation.showtime;
 
         daysSet.add(day);
         showtimesSet.add(showtime);
@@ -158,9 +114,9 @@ function filterReservations() {
     const selectedShowtime = document.getElementById('showtime-select').value;
 
     const filteredReservations = allReservations.filter(reservation => {
-        const title = reservation.getElementsByTagName('filmTitle')[0].textContent.toLowerCase();
-        const day = reservation.getElementsByTagName('day')[0].textContent;
-        const showtime = reservation.getElementsByTagName('showtime')[0].textContent;
+        const title = reservation.filmTitle.toLowerCase();
+        const day = reservation.day;
+        const showtime = reservation.showtime;
         
         const matchesTitle = title.includes(filmTitle);
         const matchesDay = selectedDay === '' || day === selectedDay;
@@ -173,28 +129,24 @@ function filterReservations() {
 }
 
 async function cancelReservation(filmTitle, day, showtime, seats) {
-    const envelope = `<?xml version="1.0"?>
-    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                      xmlns:ser="http://service.cinema.rsi/">
-        <soapenv:Body>
-            <ser:cancelReservation>
-                <filmTitle>${filmTitle}</filmTitle>
-                <day>${day}</day>
-                <showtime>${showtime}</showtime>
-                ${seats.map(seat => `<seats>${seat}</seats>`).join('')}
-            </ser:cancelReservation>
-        </soapenv:Body>
-    </soapenv:Envelope>`;
-
     try {
-        const xml = await callSoap(envelope);
-        const response = xml.getElementsByTagName('return')[0]?.textContent;
-
-        if (response && response.includes('cancelled')) {
+        const reservationIndex = getReservationIndex(filmTitle, day, showtime, seats);
+        if (reservationIndex === -1) {
+            alert('Reservation not found.');
+            return;
+        }
+        const resp = await fetch(`https://localhost:8443/cinema/reservation/${reservationIndex}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': sessionStorage.getItem('basicAuth')
+            }
+        });
+        const responseText = await resp.text();
+        if (resp.ok && responseText.includes('cancelled')) {
             alert('Reservation cancelled successfully!');
             await loadReservations();
         } else {
-            alert(`Cancellation failed: ${response}`);
+            alert(`Cancellation failed: ${responseText}`);
         }
     } catch (error) {
         console.error('Error cancelling reservation:', error);
@@ -202,22 +154,48 @@ async function cancelReservation(filmTitle, day, showtime, seats) {
     }
 }
 
-async function generatePDF(filmTitle, day, showtime, seats) {
-    const envelope = `<?xml version="1.0"?>
-    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                      xmlns:ser="http://service.cinema.rsi/">
-        <soapenv:Body>
-            <ser:generatePDF>
-                <filmTitle>${filmTitle}</filmTitle>
-                <day>${day}</day>
-                <showtime>${showtime}</showtime>
-                ${seats.map(seat => `<seats>${seat}</seats>`).join('')}
-            </ser:generatePDF>
-        </soapenv:Body>
-    </soapenv:Envelope>`;
+function getReservationIndex(filmTitle, day, showtime, seats) {
+    return allReservations.findIndex(r =>
+        r.filmTitle === filmTitle &&
+        r.day === day &&
+        r.showtime === showtime &&
+        arraysEqual(r.seats.sort(), seats.sort())
+    );
+}
 
+async function generatePDF(filmTitle, day, showtime, seats) {
     try {
-        const xml = await callSoap(envelope);
+        const filmIndex = await getFilmIndexByTitle(filmTitle);
+        if (filmIndex === -1) {
+            alert('Film not found.');
+            return;
+        }
+        const resp = await fetch('https://localhost:8443/cinema/generate-pdf', {
+            method: 'POST',
+            headers: {
+                'Authorization': sessionStorage.getItem('basicAuth'),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                filmIndex,
+                day,
+                showtime,
+                seats
+            })
+        });
+        if (!resp.ok) {
+            alert('Failed to generate PDF.');
+            return;
+        }
+        const blob = await resp.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'reservation.pdf';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
     } catch (error) {
         console.error('Error generating PDF:', error);
         alert('An error occurred while generating the PDF.');
@@ -442,21 +420,15 @@ function createButton(text, className) {
 }
 
 async function getFilmIndexByTitle(title) {
-    const envelope = `<?xml version="1.0"?>
-    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                      xmlns:ser="http://service.cinema.rsi/">
-        <soapenv:Body>
-            <ser:getFilmList/>
-        </soapenv:Body>
-    </soapenv:Envelope>`;
-
     try {
-        const xml = await callSoap(envelope);
-        const films = Array.from(xml.getElementsByTagName('return'));
+        const resp = await fetch('https://localhost:8443/cinema/films', {
+            method: 'GET',
+        });
+        if (!resp.ok) throw new Error(`HTTP error! status: ${resp.status}`);
+        const films = await resp.json();
         
         for (let i = 0; i < films.length; i++) {
-            const filmTitle = films[i].getElementsByTagName('title')[0].textContent;
-            if (filmTitle === title) {
+            if (films[i].title === title) {
                 return i;
             }
         }
@@ -469,45 +441,13 @@ async function getFilmIndexByTitle(title) {
 }
 
 async function getShowtimesForFilmDay(filmIndex, day) {
-    const envelope = `<?xml version="1.0"?>
-    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                      xmlns:ser="http://service.cinema.rsi/">
-        <soapenv:Body>
-            <ser:getFilmList/>
-        </soapenv:Body>
-    </soapenv:Envelope>`;
-
     try {
-        const xml = await callSoap(envelope);
-        const film = xml.getElementsByTagName('return')[filmIndex];
-        
-        if (!film) {
-            return [];
-        }
-        
-        const scheduleEntries = Array.from(film.getElementsByTagName('entry'));
-        
-        for (const entry of scheduleEntries) {
-            const entryDay = entry.getElementsByTagName('key')[0].textContent;
-
-            if (entryDay === day) {
-                const valueElements = entry.getElementsByTagName('value');
-                let showtimes = [];
-                
-                if (valueElements && valueElements.length > 0) {
-                    for (let i = 0; i < valueElements.length; i++) {
-                        const valueText = valueElements[i].textContent.trim();
-                        if (valueText) {
-                            showtimes.push(valueText);
-                        }
-                    }
-                }
-                
-                return showtimes;
-            }
-        }
-        
-        return [];
+        const resp = await fetch(`https://localhost:8443/cinema/films/${filmIndex}`, {
+            method: 'GET',
+        });
+        if (!resp.ok) throw new Error(`HTTP error! status: ${resp.status}`);
+        const film = await resp.json();
+        return film.schedule[day] || [];
     } catch (error) {
         console.error('Error fetching showtimes:', error);
         return [];
@@ -573,21 +513,16 @@ async function updateSeatsForEdit(seatsContainer, filmIndex, day, showtime, curr
 }
 
 async function getOccupiedSeats(filmIndex, day, showtime) {
-    const envelope = `<?xml version="1.0"?>
-    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                      xmlns:ser="http://service.cinema.rsi/">
-        <soapenv:Body>
-            <ser:getOccupiedSeats>
-                <filmIndex>${filmIndex}</filmIndex>
-                <day>${day}</day>
-                <showtime>${showtime}</showtime>
-            </ser:getOccupiedSeats>
-        </soapenv:Body>
-    </soapenv:Envelope>`;
-
     try {
-        const xml = await callSoap(envelope);
-        return Array.from(xml.getElementsByTagName('return')).map(seat => seat.textContent);
+        const resp = await fetch(`https://localhost:8443/cinema/occupied-seats?filmIndex=${filmIndex}&day=${day}&showtime=${showtime}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': sessionStorage.getItem('basicAuth'),
+                'Content-Type': 'application/json'
+            }
+        });
+        if (!resp.ok) throw new Error(`HTTP error! status: ${resp.status}`);
+        return await resp.json();
     } catch (error) {
         console.error('Error fetching occupied seats:', error);
         return [];
@@ -595,49 +530,31 @@ async function getOccupiedSeats(filmIndex, day, showtime) {
 }
 
 async function updateReservation(filmTitle, originalDay, originalShowtime, originalSeats, newShowtime, newSeats) {
-    try {
-        const cancelEnvelope = `<?xml version="1.0"?>
-        <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                          xmlns:ser="http://service.cinema.rsi/">
-            <soapenv:Body>
-                <ser:cancelReservation>
-                    <filmTitle>${filmTitle}</filmTitle>
-                    <day>${originalDay}</day>
-                    <showtime>${originalShowtime}</showtime>
-                    ${originalSeats.map(seat => `<seats>${seat}</seats>`).join('')}
-                </ser:cancelReservation>
-            </soapenv:Body>
-        </soapenv:Envelope>`;
-
-        await callSoap(cancelEnvelope);
-
-        const filmIndex = await getFilmIndexByTitle(filmTitle);
-        
-        const makeReservationEnvelope = `<?xml version="1.0"?>
-        <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-                          xmlns:ser="http://service.cinema.rsi/">
-            <soapenv:Body>
-                <ser:makeReservation>
-                    <filmIndex>${filmIndex}</filmIndex>
-                    <day>${originalDay}</day>
-                    <showtime>${newShowtime}</showtime>
-                    ${newSeats.map(seat => `<seats>${seat}</seats>`).join('')}
-                </ser:makeReservation>
-            </soapenv:Body>
-        </soapenv:Envelope>`;
-
-        const xml = await callSoap(makeReservationEnvelope);
-        const response = xml.getElementsByTagName('return')[0]?.textContent;
-
-        if (response && response.includes('successful')) {
-            alert('Reservation updated successfully!');
-            await loadReservations();
-        } else {
-            alert(`Update failed: ${response}`);
-        }
-    } catch (error) {
-        console.error('Error updating reservation:', error);
-        alert('An error occurred while updating the reservation. Please try again later.');
+    const reservationIndex = getReservationIndex(filmTitle, originalDay, originalShowtime, originalSeats);
+    if (reservationIndex === -1) {
+        alert('Reservation not found.');
+        return;
+    }
+    const filmIndex = await getFilmIndexByTitle(filmTitle);
+    const resp = await fetch(`https://localhost:8443/cinema/reservation/${reservationIndex}`, {
+        method: 'PUT',
+        headers: {
+            'Authorization': sessionStorage.getItem('basicAuth'),
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            filmIndex,
+            day: originalDay,
+            showtime: newShowtime,
+            seats: newSeats
+        })
+    });
+    const text = await resp.text();
+    if (resp.ok) {
+        alert('Reservation updated successfully!');
+        await loadReservations();
+    } else {
+        alert(`Update failed: ${text}`);
     }
 }
 

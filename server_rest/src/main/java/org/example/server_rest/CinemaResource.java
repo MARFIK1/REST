@@ -1,13 +1,18 @@
 package org.example.server_rest;
 
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.core.*;
+
+import org.example.dtos.FilmInfoHateoasDto;
 import org.example.dtos.RegisterOrLoginRequestDto;
+import org.example.dtos.ReservationHateoasDto;
 import org.example.dtos.ReservationRequestDto;
 import org.example.helpers.TokenValidator;
 import org.example.model.FilmInfo;
 import org.example.model.Reservation;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Path("/cinema")
@@ -25,14 +30,23 @@ public class CinemaResource {
 
     @GET
     @Path("/films")
-    public List<FilmInfo> getFilmList() {
-        return cinemaService.getFilmList();
+    public List<FilmInfoHateoasDto> getFilmList(@Context UriInfo uriInfo) {
+        List<FilmInfo> films = cinemaService.getFilmList();
+        List<FilmInfoHateoasDto> result = new ArrayList<>();
+        for (int i = 0; i < films.size(); i++) {
+            result.add(new FilmInfoHateoasDto(films.get(i), i, uriInfo));
+        }
+        return result;
     }
 
     @GET
     @Path("/films/{filmId}")
-    public FilmInfo getFilmInfo(@PathParam("filmId") int filmId) {
-        return cinemaService.getFilmInfo(filmId);
+    public FilmInfoHateoasDto getFilmInfo(@PathParam("filmId") int filmId, @Context UriInfo uriInfo) {
+        FilmInfo film = cinemaService.getFilmInfo(filmId);
+        if (film == null) {
+            throw new NotFoundException("Film not found");
+        }
+        return new FilmInfoHateoasDto(film, filmId, uriInfo);
     }
 
     @GET
@@ -51,11 +65,8 @@ public class CinemaResource {
     @POST
     @Path("/reservation")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response makeReservation(@HeaderParam("Authorization") String authToken, ReservationRequestDto req) {
-        String username = TokenValidator.getUsernameFromToken(authToken);
-        if (username == null) {
-            return Response.status(Response.Status.UNAUTHORIZED).entity("Invalid token").build();
-        }
+    public Response makeReservation(@Context ContainerRequestContext ctx, ReservationRequestDto req) {
+        String username = (String) ctx.getProperty("username");
         String result = cinemaService.makeReservation(req.filmIndex, req.day, req.showtime, req.seats, username);
         if (result.startsWith("Reservation successful")) {
             return Response.ok(result).build();
@@ -64,14 +75,41 @@ public class CinemaResource {
         }
     }
 
+    @DELETE
+    @Path("/reservation/{reservationIndex}")
+    public Response cancelReservation(@Context ContainerRequestContext ctx, @PathParam("reservationIndex") int reservationIndex) {
+        String username = (String) ctx.getProperty("username");
+        String result = cinemaService.cancelReservation(username, reservationIndex);
+        if (result.startsWith("Reservation cancelled")) {
+            return Response.ok(result).build();
+        } else {
+            return Response.status(Response.Status.BAD_REQUEST).entity(result).build();
+        }
+    }
+
+    @PUT
+    @Path("/reservation/{reservationIndex}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response editReservation(@Context ContainerRequestContext ctx, @PathParam("reservationIndex") int reservationIndex, ReservationRequestDto req) {
+        String username = (String) ctx.getProperty("username");
+        String result = cinemaService.editReservation(username, reservationIndex, req);
+        if (result.startsWith("Reservation updated")) {
+            return Response.ok(result).build();
+        } else {
+            return Response.status(Response.Status.BAD_REQUEST).entity(result).build();
+        }
+    }
+
     @GET
     @Path("/reservations")
-    public List<Reservation> getUserReservations(@HeaderParam("Authorization") String authToken) {
-        String username = TokenValidator.getUsernameFromToken(authToken);
-        if (username == null) {
-            throw new WebApplicationException("Invalid token", Response.Status.UNAUTHORIZED);
+    public List<ReservationHateoasDto> getUserReservations(@Context ContainerRequestContext ctx, @Context UriInfo uriInfo) {
+        String username = (String) ctx.getProperty("username");
+        List<Reservation> reservations = cinemaService.getUserReservations(username);
+        List<ReservationHateoasDto> result = new ArrayList<>();
+        for (int i = 0; i < reservations.size(); i++) {
+            result.add(new ReservationHateoasDto(reservations.get(i), i, uriInfo));
         }
-        return cinemaService.getUserReservations(username);
+        return result;
     }
 
     @GET
@@ -103,20 +141,18 @@ public class CinemaResource {
         return Response.ok(token).build();
     }
 
-    public static class RegisterRequest {
-        public String username;
-        public String password;
-    }
-
-    public static class LoginRequest {
-        public String username;
-        public String password;
-    }
-
-    public static class ReservationRequest {
-        public int filmIndex;
-        public String day;
-        public String showtime;
-        public List<String> seats;
+    @POST
+    @Path("/generate-pdf")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces("application/pdf")
+    public Response generatePDF(@Context ContainerRequestContext ctx, ReservationRequestDto req) {
+        String username = (String) ctx.getProperty("username");
+        byte[] pdf = cinemaService.generatePDF(req.filmIndex, req.day, req.showtime, req.seats, username);
+        if (pdf == null) {
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("PDF generation failed").build();
+        }
+        return Response.ok(pdf)
+                .header("Content-Disposition", "attachment; filename=reservation.pdf")
+                .build();
     }
 }

@@ -1,5 +1,7 @@
 package org.example.model;
 
+import org.example.dtos.LinkDto;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,6 +15,7 @@ public class FilmInfo {
     private String imageName;
     private Map<String, List<String>> schedule;
     private Map<String, Map<String, List<String>>> seatsBySchedule;
+    private List<LinkDto> links;
 
     public FilmInfo() {}
     
@@ -64,6 +67,15 @@ public class FilmInfo {
     public void setImageName(String imageName) { this.imageName = imageName; }
     public Map<String, List<String>> getSchedule() { return schedule; }
     public void setSchedule(Map<String, List<String>> schedule) { this.schedule = schedule; }
+    public List<LinkDto> getLinks() {
+        if (links == null) {
+            links = new ArrayList<>();
+        }
+        return links;
+    }
+    public void setLinks(List<LinkDto> links) {
+        this.links = links;
+    }
     
     public List<String> getAvailableSeats(String day, String showtime) {
         if (seatsBySchedule == null) {

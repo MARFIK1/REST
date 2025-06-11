@@ -12,9 +12,9 @@ function setupNavbar() {
     const authBtn = document.createElement('button');
     authBtn.id = 'navAuthBtn';
     authBtn.className = 'navbar-button';
-    const authToken = sessionStorage.getItem('authToken');
+    const basicAuth = sessionStorage.getItem('basicAuth');
     
-    if (authToken) {
+    if (basicAuth) {
         const reservationsBtn = document.createElement('button');
         reservationsBtn.id = 'navReservationsBtn';
         reservationsBtn.className = 'navbar-button';
@@ -27,7 +27,7 @@ function setupNavbar() {
         authBtn.textContent = 'Logout';
 
         authBtn.addEventListener('click', function() {
-            sessionStorage.removeItem('authToken');
+            sessionStorage.removeItem('basicAuth');
             window.location.reload();
         });
     }

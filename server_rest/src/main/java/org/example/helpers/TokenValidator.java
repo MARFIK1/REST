@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import java.io.*;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -102,7 +101,7 @@ public class TokenValidator {
 
         String token = UUID.randomUUID().toString();
         validTokens.put(username, token);
-        System.out.println("Zalogowano użytkownika: " + username + " z tokenem: " + token);
+        System.out.println("Zalogowano użytkownika: " + username);
         return token;
     }
 
@@ -121,5 +120,22 @@ public class TokenValidator {
             }
         }
         return null;
+    }
+
+    public static boolean isPasswordValid(String username, String password) {
+        if (username == null || password == null) {
+            System.out.println("Próba sprawdzenia hasła z pustym username lub password");
+            return false;
+        }
+        String storedPassword = userPasswords.get(username);
+        if (storedPassword == null) {
+            System.out.println("Próba sprawdzenia hasła dla nieistniejącego użytkownika: " + username);
+            return false;
+        }
+        boolean isValid = storedPassword.equals(password);
+        if (!isValid) {
+            System.out.println("Nieprawidłowe hasło dla użytkownika: " + username);
+        }
+        return isValid;
     }
 }
