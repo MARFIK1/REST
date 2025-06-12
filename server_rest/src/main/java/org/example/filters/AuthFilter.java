@@ -15,7 +15,7 @@ public class AuthFilter implements ContainerRequestFilter {
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
         String path = requestContext.getUriInfo().getPath();
-        if (path.equals("cinema/login") || path.equals("cinema/register") || path.startsWith("cinema/films") || path.startsWith("cinema/images/")) {
+        if (path.equals("cinema/login") || path.equals("cinema/register") || path.startsWith("cinema/films") || path.startsWith("cinema/images/") || path.equals("application.wadl") || path.startsWith("application.wadl/")) {
             return;
         }
         String authHeader = requestContext.getHeaderString("Authorization");

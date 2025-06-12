@@ -189,8 +189,6 @@ public class CinemaService {
 
         List<String> allSeats = new ArrayList<>();
         for (Reservation reservation : reservations) {
-            System.out.println(reservation.getUsername()+ " " + reservation.getFilmTitle() + " " + reservation.getDay() + " " + reservation.getShowtime());
-            System.out.println(film.getTitle() + " " + day + " " + showtime);
             if (reservation.getFilmTitle().equals(film.getTitle()) &&
                 reservation.getDay().equals(day) &&
                 reservation.getShowtime().equals(showtime)) {
